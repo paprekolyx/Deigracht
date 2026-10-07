@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <title>Справка · Deigracht</title>
+  <meta name="description" content="Живой справочник синтаксиса редактора Deigracht: Markdown, блоки Homebrewery V3, печать, юридическая памятка.">
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+  <link rel="stylesheet" href="assets/css/fonts.css">
+  <link rel="stylesheet" href="assets/css/tokens.css">
+  <link rel="stylesheet" href="assets/css/editor.css">
+  <link rel="stylesheet" href="assets/css/theme-book.css">
+  <link rel="stylesheet" href="assets/css/print.css">
+</head>
+<body class="help-body">
+
+  <header class="toolbar ui">
+    <a class="brand brand-link" href="index.html">
+      <img class="brand-mark" src="assets/img/favicon.svg" alt="">Deigracht
+    </a>
+    <span class="chip">справка</span>
+    <span class="chip" id="help-version"></span>
+    <nav class="tools">
+      <a class="btn" href="index.html">В редактор</a>
+    </nav>
+  </header>
+
+  <main class="help-main">
+    <section class="help-legal ui" aria-label="Юридическая памятка">
+      <h2>Памятка о правах и содержимом документов</h2>
+      <ul>
+        <li><b>Ваши документы — ваши.</b> Редактор не приобретает прав на
+          созданные вами тексты (LICENSE, ч. 3 п. 5). Документы хранятся
+          только в вашем браузере; сайт не собирает персональных данных.</li>
+        <li><b>Персональные данные в документах</b> — зона вашей
+          ответственности: сайт их не обрабатывает и не защищает
+          (решение владельца, ЮР-02).</li>
+        <li><b>Fan Content Policy (Wizards of the Coast).</b> Deigracht —
+          неофициальный инструмент, не аффилирован с WotC и не одобрен ею;
+          «D&amp;D» и связанные обозначения — товарные знаки Wizards of the
+          Coast LLC. Если ваш документ использует миры, лор и арт-образы
+          D&amp;D, он должен оставаться бесплатным фан-контентом; рекомендуемая
+          плашка в документе: «[Название] is unofficial Fan Content permitted
+          under the Fan Content Policy. Not approved/endorsed by Wizards.
+          Portions of the materials used are property of Wizards of the
+          Coast. ©Wizards of the Coast LLC.»</li>
+        <li><b>SRD 5.1 (System Reference Document).</b> Тексты SRD
+          распространяются под лицензией CC-BY-4.0: используя фрагменты SRD
+          (статблоки, заклинания, монстров из SRD) в своих документах,
+          указывайте атрибуцию: «Based on the System Reference Document 5.1,
+          © Wizards of the Coast LLC, licensed under CC-BY-4.0». Конструктор
+          статблоков (v0.5.0) форматирует, но не заменяет атрибуцию.</li>
+        <li><b>Шрифты и оформление редактора</b> — свободные лицензии
+          (OFL 1.1, CC0); ничего из оформления официальных книг WotC
+          не копируется (решение владельца, ВЛ-11).</li>
+      </ul>
+    </section>
+
+    <section class="help-book" aria-label="Живой справочник синтаксиса">
+      <div class="pane-title">Живой справочник · каждый пример отрендерен
+        конвейером редактора · <span id="help-pages"></span></div>
+      <div class="pages-scroll" id="pages-scroll">
+        <div id="pages" data-format="letter"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/util.js"></script>
+  <script src="assets/js/parser.js"></script>
+  <script src="assets/js/blocks.js"></script>
+  <script src="assets/js/render.js"></script>
+  <script src="assets/js/pages.js"></script>
+  <script src="assets/js/help.js"></script>
+</body>
+</html>

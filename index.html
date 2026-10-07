@@ -31,6 +31,12 @@
     <nav class="tools" aria-label="Действия с документом">
       <button class="btn" id="btn-open" type="button" title="Открыть файл .md/.txt (или перетащите файл в панель исходника)">Открыть .md</button>
       <button class="btn" id="btn-save" type="button" title="Скачать документ файлом .md (совместим с Homebrewery)">Сохранить .md</button>
+      <div class="menu-wrap">
+        <button class="btn" id="btn-snippets" type="button" aria-haspopup="true" aria-expanded="false" title="Вставить заготовку блока (fp №10)">Вставить ▾</button>
+        <div class="menu" id="snippets-menu" hidden role="menu"></div>
+      </div>
+      <button class="btn" id="btn-export" type="button" title="Самодостаточный .html со шрифтами: открывается без интернета (fp №7б)">Экспорт HTML</button>
+      <a class="btn" href="help.html" title="Живой справочник синтаксиса и юридическая памятка (fp №10)">Справка</a>
       <button class="btn" id="btn-demo" type="button" title="Загрузить демонстрационный документ">Пример</button>
       <button class="btn btn--primary" id="btn-print" type="button" title="Настройки печати и сохранение в PDF (Ctrl+P)">Печать / PDF</button>
     </nav>
@@ -101,6 +107,8 @@
   <script src="assets/js/pages.js"></script>
   <script src="assets/js/storage.js"></script>
   <script src="assets/js/pdf.js"></script>
+  <script src="assets/js/snippets.js"></script>
+  <script src="assets/js/export.js"></script>
   <script src="assets/js/editor.js"></script>
 </body>
 </html>
