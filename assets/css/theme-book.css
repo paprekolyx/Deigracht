@@ -401,6 +401,15 @@
   transform: translateY(-3px);
   min-width: 1em;
 }
+/* {{toc,auto}} — автооглавление (волна v0.4.0, fp №11): отступы уровней;
+   лидеры и номера — те же классы, что у ручного {{toc}} */
+.block-toc--auto li.toc-lvl-2 { padding-left: 1.25em; }
+.block-toc--auto li.toc-lvl-3 { padding-left: 2.5em; }
+.block-toc--auto li.toc-lvl-4 { padding-left: 3.75em; }
+.block-toc--auto li.toc-lvl-5,
+.block-toc--auto li.toc-lvl-6 { padding-left: 5em; }
+.block-toc--auto .toc-row[aria-disabled='true'] .toc-page { opacity: 0.55; }
+.block-toc--auto .toc-empty { font-style: italic; opacity: 0.75; }
 .block-toc .toc-page {
   font-family: var(--font-stat);
   font-weight: 700;
