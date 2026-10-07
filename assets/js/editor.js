@@ -205,6 +205,37 @@ DG.editor = (function () {
       DG.pdf.open();
     });
 
+    /* сниппеты (fp №10): меню заготовок — вставка в курсор */
+    var snipBtn = document.getElementById('btn-snippets');
+    var snipMenu = document.getElementById('snippets-menu');
+    DG.snippets.list().forEach(function (sn) {
+      var b = DG.util.el('button', 'menu-item', { type: 'button', text: sn.label });
+      b.setAttribute('role', 'menuitem');
+      b.addEventListener('click', function () {
+        DG.snippets.insertInto(src, sn.text);
+        snipMenu.hidden = true;
+        snipBtn.setAttribute('aria-expanded', 'false');
+      });
+      snipMenu.appendChild(b);
+    });
+    snipBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      snipMenu.hidden = !snipMenu.hidden;
+      snipBtn.setAttribute('aria-expanded', String(!snipMenu.hidden));
+    });
+    document.addEventListener('click', function (e) {
+      if (!snipMenu.hidden && !e.target.closest('.menu-wrap')) {
+        snipMenu.hidden = true;
+        snipBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    /* экспорт самодостаточного .html (fp №7б) */
+    document.getElementById('btn-export').addEventListener('click', function () {
+      setSaveState('сборка .html…', '');
+      DG.exportHtml.run(pagesEl, lastTitle, DG.pdf.currentFormat(), setSaveState);
+    });
+
     /* документ: восстановление из браузера или демо при первом запуске */
     var doc = DG.storage.loadDoc();
     if (doc === null) {
