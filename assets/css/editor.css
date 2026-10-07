@@ -201,3 +201,57 @@ body.dragging { cursor: col-resize; user-select: none; }
   .toolbar { flex-wrap: wrap; }
   .tools { margin-left: 0; }
 }
+
+/* ---------- меню сниппетов (fp №10, v0.3.0) ---------- */
+.menu-wrap { position: relative; }
+.menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--ui-panel);
+  border: 1px solid #5a4f42;
+  border-radius: 6px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  min-width: 240px;
+  z-index: 40;
+  padding: 6px;
+  max-height: 70vh;
+  overflow: auto;
+}
+.menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  color: var(--ui-text);
+  font-family: var(--ui-font);
+  font-size: 13px;
+  padding: 7px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.menu-item:hover, .menu-item:focus-visible { background: #453d33; outline: none; }
+
+/* ---------- страница справки (help.html, v0.3.0) ---------- */
+.brand-link { color: inherit; text-decoration: none; }
+.help-main { flex: 1 1 auto; min-height: 0; overflow: auto; display: block; }
+.help-legal {
+  max-width: 920px;
+  margin: 20px auto 8px;
+  padding: 0 18px;
+  color: #cbbd99;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.help-legal h2 {
+  font-family: var(--font-heading);
+  color: #d8c9a3;
+  font-size: 21px;
+  margin: 0 0 10px;
+}
+.help-legal ul { padding-left: 1.25em; margin: 0; }
+.help-legal li { margin: 0.45em 0; }
+.help-book { min-height: 60vh; }
+.help-book .pane-title { position: sticky; top: 0; z-index: 5; }
+.help-book .pages-scroll { overflow: visible; }
