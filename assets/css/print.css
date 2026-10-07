@@ -21,8 +21,10 @@
   }
 
   /* интерфейс — скрыть (класс .ui носят тулбар, панель исходника,
-     divider, статус-бар, модалка) */
-  .ui { display: none !important; }
+     divider, статус-бар, модалка); .pane-title скрываем отдельно:
+     в волну v0.1.x он попадал в печать и создавал пустую первую страницу
+     (записка приёмки З1, исправлено в v0.3.1) */
+  .ui, .pane-title { display: none !important; }
 
   .workspace, .pane-preview, .pages-scroll {
     display: block;
