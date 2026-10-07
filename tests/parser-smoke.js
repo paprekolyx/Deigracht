@@ -129,6 +129,44 @@ eq('heading после \\page', d.blocks[12].t, 'heading');
 const wide = d.blocks[13];
 eq('v3 незакрытый wide', [wide.modsRaw, wide.closed], ['wide', false]);
 
+/* ---------- 2б. блоки V3: AST (волна v0.2.0) ---------- */
+const v3doc = parse([
+  '{{note', 'текст **врезки**', '}}', '',
+  '{{column-count:3', 'три колонки', '}}', '',
+  '{{toc,wide', '- [{{ Раздел}}{{ 2}}](#p2)', '}}', '',
+  '{{monster', '#### Имя', '___', 'черта', '}}', '',
+  '{{imageMaskEdge6,--offset:45%', '  ![x](https://e.com/i.png) {width:100%}', '}}', '',
+  '{{unknownmod', 'текст', '}}'
+].join('\n'));
+eq('v3: порядок modsRaw', v3doc.blocks.map(b => b.modsRaw),
+  ['note', 'column-count:3', 'toc,wide', 'monster', 'imageMaskEdge6,--offset:45%', 'unknownmod']);
+eq('v3: все закрыты', v3doc.blocks.every(b => b.closed), true);
+eq('v3: monster содержит h4 + hr + p', v3doc.blocks[3].body.map(b => b.t), ['heading', 'hr', 'para']);
+eq('v3: monster h4 уровень', v3doc.blocks[3].body[0].lvl, 4);
+eq('v3: imageMask содержит инлайн-картинку', v3doc.blocks[4].body[0].in.some(n => n.t === 'img'), true);
+
+/* ---------- 2в. fuzz: парсер не падает (волна v0.2.0, DoD «полный фаззинг») ---------- */
+const fuzzCases = [
+  '', '   ', '\n\n\n', '{{', '}}', '{{note', '{{note\nбез закрытия',
+  '```\nнезакрытый fence', '#', '######', '####### семь',
+  '|', '| a |\n|', '| a |\n|-|\n| 1 |\n', '![alt](', '[текст](',
+  '**незакрытый жирный', '*незакрытый', '***', '___\n___\n___',
+  '\\page\\page', '{{column-count:99\nx\n}}', '{{column-count:0\nx\n}}',
+  '{{pageNumber,auto', '<script>alert(1)<\/script>', '<img src=x onerror=alert(1)>',
+  'javascript:alert(1)', '{{wide\n' + 'слово '.repeat(3000) + '\n}}',
+  'а'.repeat(20000), '- '.repeat(500), '\u0000\u0001 управляющие',
+  '{{вложенный{{блок}}', 'текст с {{фигурными}} внутри строки'
+];
+for (const fc of fuzzCases) {
+  let okFlag = true;
+  try {
+    const r = parse(fc);
+    JSON.stringify(r.blocks);
+    if (!Array.isArray(r.blocks)) okFlag = false;
+  } catch (e) { okFlag = false; console.log('  fuzz упал на:', JSON.stringify(fc.slice(0, 40)), e.message); }
+  is('fuzz: ' + JSON.stringify(fc.slice(0, 24)), okFlag);
+}
+
 /* ---------- 3. эталон: замороженные метрики (metrika.md) ---------- */
 const etalonPath = path.join(root, 'data/etalon/etalon-sint.md');
 if (!fs.existsSync(etalonPath)) {

@@ -27,6 +27,7 @@
   v1.0 (0.1.0-draft): первый состав — 12 групп проверок (волна v0.1.0);
     REQUIRED включает tests/parser-smoke.js (регресс эталона — метрики в
     data/etalon/metrika.md).
+  v1.3 (0.2.0-draft): REQUIRED — docs/update/update-v020.md (волна v0.2.0).
   v1.2 (0.1.2-draft): REQUIRED — .nojekyll в корне (отключение Jekyll на
     GitHub Pages: синтаксис V3 `{{…}}` конфликтует с Liquid, волна v0.1.2).
   v1.1 (0.1.1-draft): REQUIRED — data/etalon/etalon-sint.md вместо копии
@@ -71,7 +72,7 @@ REQUIRED = [
     'docs/plan/voprosy-vladeltsu.md',
     'docs/update/update-v001.md', 'docs/update/update-v002.md',
     'docs/update/update-v003.md', 'docs/update/update-v010.md',
-    'docs/update/update-v011.md',
+    'docs/update/update-v011.md', 'docs/update/update-v020.md',
     'docs/setup/setup-repo-pages.md',
     'assets/css/fonts.css', 'assets/css/tokens.css', 'assets/css/editor.css',
     'assets/css/theme-book.css', 'assets/css/print.css',
