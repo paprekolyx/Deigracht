@@ -5,7 +5,7 @@
    никогда — сервера нет (SECURITY.md §1). Волна v0.1.1. */
 'use strict';
 
-const SITE_VERSION = '0.1.1-draft';
+const SITE_VERSION = '0.1.2-draft';
 
 /* Единое пространство имён модулей (vanilla JS без сборки — ADR-001). */
 window.DG = window.DG || {};
