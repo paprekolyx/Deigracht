@@ -7,7 +7,13 @@
    документа владельца (текст — генерация «ааа ббб», блок-каркас и метрики —
    точная копия; решение владельца 07.10.2026: авторский текст не публикуется.
    Регресс-приёмка, регламент §8.4 — значения заморожены в metrika.md).
-   DOM не нужен: тестируются config.js/util.js/parser.js (чистые данные).
+   DOM не нужен: тестируются чистые функции config.js/util.js/parser.js/
+   blocks.js (tocHeading)/toc.js. Рендер-проверки конвейера — с wave v0.4.1
+   в tests/render-smoke.js (DOM-заглушка, АН-27).
+   Вектора v0.4.1 (rev040): Н-03 (ATX-префикс строк ручного TOC), Н-06
+   (некорректный auto-диапазон — badRange), Н-09/ответ В-3 (safeUrl:
+   отклонение `//host`, mailto в whitelist), Н-10 (внутрисловный `_` —
+   литерал по GFM), Н-05 (спецификации авто-TOC — только блоки {{toc…}}).
    Код выхода 0 = зелёный. */
 'use strict';
 
@@ -17,12 +23,13 @@ const vm = require('vm');
 
 global.window = global;
 const root = path.join(__dirname, '..');
-for (const f of ['config.js', 'util.js', 'parser.js']) {
+for (const f of ['config.js', 'util.js', 'parser.js', 'blocks.js']) {
   vm.runInThisContext(fs.readFileSync(path.join(root, 'assets/js', f), 'utf8'),
     { filename: f });
 }
 const { safeUrl, countWords } = global.DG.util;
-const { parse } = global.DG.parser;
+const { parse, parseInline } = global.DG.parser;
+const { tocHeading } = global.DG.blocks;
 
 let fails = 0, passes = 0;
 function is(name, cond, extra) {
@@ -30,8 +37,11 @@ function is(name, cond, extra) {
   else { fails++; console.log('  FAIL', name, extra !== undefined ? extra : ''); }
 }
 function eq(name, a, b) { is(name, JSON.stringify(a) === JSON.stringify(b), `получено ${JSON.stringify(a)}, ожидалось ${JSON.stringify(b)}`); }
+function hasType(nodes, t) {
+  return (nodes || []).some(n => n.t === t || hasType(n.in, t));
+}
 
-/* ---------- 1. safeUrl (XSS/схемы) ---------- */
+/* ---------- 1. safeUrl (XSS/схемы; v0.4.1 — Н-09/ответ В-3) ---------- */
 is('safeUrl: javascript: отклоняется', safeUrl('javascript:alert(1)') === null);
 is('safeUrl: java\\tscript: отклоняется (управляющие символы)', safeUrl('java\tscript:alert(1)') === null);
 is('safeUrl: JaVaScRiPt: отклоняется (регистр)', safeUrl('JaVaScRiPt:alert(1)') === null);
@@ -41,6 +51,11 @@ is('safeUrl: https разрешён', safeUrl('https://example.com/a.png') === '
 is('safeUrl: http разрешён', safeUrl('http://example.com') === 'http://example.com');
 is('safeUrl: якорь разрешён', safeUrl('#p2') === '#p2');
 is('safeUrl: пробелы вокруг http вычищаются', safeUrl('  https://ok.example  ') === 'https://ok.example');
+is('Н-09: protocol-relative //evil.com/x отклоняется', safeUrl('//evil.com/x') === null, safeUrl('//evil.com/x'));
+is('В-3: mailto разрешён (whitelist — ответ владельца 07.10.2026)',
+  safeUrl('mailto:mail@example.com') === 'mailto:mail@example.com');
+is('В-3: mailto регистронезависим', safeUrl('MAILTO:a@b.c') === 'MAILTO:a@b.c');
+is('safeUrl: относительный /a.png разрешён', safeUrl('/a.png') === '/a.png');
 is('countWords', countWords('привет мир! hello') === 3);
 
 /* ---------- 2. синтетический документ ---------- */
@@ -145,6 +160,25 @@ eq('v3: monster содержит h4 + hr + p', v3doc.blocks[3].body.map(b => b.t
 eq('v3: monster h4 уровень', v3doc.blocks[3].body[0].lvl, 4);
 eq('v3: imageMask содержит инлайн-картинку', v3doc.blocks[4].body[0].in.some(n => n.t === 'img'), true);
 
+/* ---------- 2г. инлайн `_` на границах слов (волна v0.4.1, rev040-Н10) ---------- */
+is('Н-10: значение_курсив_значение — литерал (нет курсива)',
+  !hasType(parseInline('значение_курсив_значение'), 'i'));
+is('Н-10: snake_case_var — литерал (GFM)',
+  !hasType(parseInline('snake_case_var'), 'i') && !hasType(parseInline('snake_case_var'), 'b'));
+is('Н-10 регресс: _курсив_ на границе — курсив', hasType(parseInline('_курсив_'), 'i'));
+is('Н-10 регресс: __жирный__ — жирный', hasType(parseInline('__жирный__'), 'b'));
+is('Н-10: пунктуация перед `_` — граница слова', hasType(parseInline('(_в скобках_)'), 'i'));
+is('Н-10 регресс: `*звёздочки*` границ не требуют (внутри слова)',
+  hasType(parseInline('слово*курсив*слово'), 'i'));
+
+/* ---------- 2д. ATX-префикс строк ручного TOC (волна v0.4.1, rev040-Н03) ---------- */
+eq('Н-03: tocHeading снимает префикс «#### »', tocHeading('#### Раздел 1'), { lvl: 4, text: 'Раздел 1' });
+eq('Н-03: tocHeading — 6 уровней', tocHeading('###### x'), { lvl: 6, text: 'x' });
+eq('Н-03: tocHeading без префикса — lvl 0', tocHeading('[{{ Раздел }}{{ 2 }}](#p2)'),
+  { lvl: 0, text: '[{{ Раздел }}{{ 2 }}](#p2)' });
+eq('Н-03: 7 решёток — не префикс (граница ATX)', tocHeading('####### семь'),
+  { lvl: 0, text: '####### семь' });
+
 /* ---------- 2в. fuzz: парсер не падает (волна v0.2.0, DoD «полный фаззинг») ---------- */
 const fuzzCases = [
   '', '   ', '\n\n\n', '{{', '}}', '{{note', '{{note\nбез закрытия',
@@ -245,24 +279,49 @@ if (!fs.existsSync(etalonPath)) {
     '| строк', src.split('\n').length);
 }
 
-/* ---------- 4. автооглавление (toc.js, волна v0.4.0, fp №11) ---------- */
+/* ---------- 4. автооглавление (toc.js, волны v0.4.0/v0.4.1) ---------- */
 /* DOM не нужен: тестируется чистая логика состава; карта страниц
-   (pagesFromDom/collect) проверяется в браузере приёмкой волны 4. */
+   (pagesFromDom/collect) и рендер оглавлений — в tests/render-smoke.js. */
 vm.runInThisContext(fs.readFileSync(path.join(root, 'assets/js', 'toc.js'), 'utf8'),
   { filename: 'toc.js' });
 const toc = global.DG.toc;
 eq('toc.parseSpec: дефолт auto = уровни 3-3', toc.parseSpec('toc,auto'),
-  { auto: true, from: 3, to: 3 });
+  { auto: true, from: 3, to: 3, badRange: false });
 eq('toc.parseSpec: диапазон 1-3', toc.parseSpec('toc,auto:1-3'),
-  { auto: true, from: 1, to: 3 });
+  { auto: true, from: 1, to: 3, badRange: false });
 eq('toc.parseSpec: один уровень', toc.parseSpec('toc,auto:2'),
-  { auto: true, from: 2, to: 2 });
+  { auto: true, from: 2, to: 2, badRange: false });
 eq('toc.parseSpec: обратный диапазон разворачивается', toc.parseSpec('toc,auto:4-2'),
-  { auto: true, from: 2, to: 4 });
+  { auto: true, from: 2, to: 4, badRange: false });
 eq('toc.parseSpec: ручной toc не тронут', toc.parseSpec('toc,wide'),
-  { auto: false, from: 3, to: 3 });
+  { auto: false, from: 3, to: 3, badRange: false });
+/* rev040-Н06: некорректный диапазон — auto:true + badRange (честная плашка),
+   однозначные 0/9 clamp\'ятся (Ф-03) */
+eq('Н-06: auto:10 — badRange (многоразрядное не clamp\'ится молча)',
+  toc.parseSpec('toc,auto:10'), { auto: true, from: 3, to: 3, badRange: true });
+eq('Н-06: auto:2- — badRange (обрыв диапазона)', toc.parseSpec('toc,auto:2-'),
+  { auto: true, from: 3, to: 3, badRange: true });
+eq('Н-06: auto:x — badRange (мусор)', toc.parseSpec('toc,auto:x'),
+  { auto: true, from: 3, to: 3, badRange: true });
+eq('Н-06 регресс: auto:0 — clamp в 1 (Ф-03)', toc.parseSpec('toc,auto:0'),
+  { auto: true, from: 1, to: 1, badRange: false });
+eq('Н-06 регресс: auto:9 — clamp в 6 (Ф-03)', toc.parseSpec('toc,auto:9'),
+  { auto: true, from: 6, to: 6, badRange: false });
+/* rev040-Н05: спецификации авто-TOC — только блоки {{toc…}};
+   {{pageNumber,auto}} оглавлением не является */
+eq('Н-05: findAllSpecs — {{pageNumber,auto}} не спецификация',
+  toc.findAllSpecs(parse('{{pageNumber,auto}}\n\ntext\n').blocks).length, 0);
+eq('Н-05: findAllSpecs — два разных диапазона = две спецификации',
+  toc.findAllSpecs(parse('{{toc,auto:1}}\n\n{{toc,auto:3}}\n').blocks)
+    .map(s => toc.specKey(s)), ['1-1', '3-3']);
+eq('Н-05: findAllSpecs — дубли диапазона схлопываются',
+  toc.findAllSpecs(parse('{{toc,auto:2}}\n\n{{toc,auto:2}}\n').blocks).length, 1);
+eq('Н-06: findAllSpecs — badRange не участвует в сходимости',
+  toc.findAllSpecs(parse('{{toc,auto:10}}\n').blocks).length, 0);
 eq('toc.textOf: разметка снимается',
   toc.textOf(parse('## Глава **первая** `код`\n').blocks[0].in), 'Глава первая код');
+eq('toc.textOf: вложенные инлайны сохраняют краевые пробелы (правка v0.4.1)',
+  toc.textOf(parseInline('*****ггг** ууу ууу ююю.***')), '*ггг ууу ууу ююю.*');
 eq('toc.collectHeadings: вложенные в V3 не входят',
   toc.collectHeadings(parse('{{monster\n### Действия\n}}\n# Часть\n## Раздел\n').blocks),
   [{ lvl: 1, text: 'Часть' }, { lvl: 2, text: 'Раздел' }]);

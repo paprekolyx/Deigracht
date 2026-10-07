@@ -21,12 +21,19 @@
  10. шаблоны секретов (регламент §9.1);
  11. шрифты: woff2 >= 16, OFL-тексты = 4, manifest.json, fonts.css ссылается
      только на существующие файлы;
- 12. data/etalon: эталон и метрики на месте, эталон непустой.
+ 12. data/etalon: эталон и метрики на месте, эталон непустой;
+ 13. update-инструкции v0.4.1+: счётчик позиций §2 = число строк таблиц
+     (урок rev040-В09, грабля №18); исторические [Н]-файлы не перепроверяются.
 
 История (шапка-комментарий — правило реестра §7.1):
   v1.0 (0.1.0-draft): первый состав — 12 групп проверок (волна v0.1.0);
     REQUIRED включает tests/parser-smoke.js (регресс эталона — метрики в
     data/etalon/metrika.md).
+  v1.8 (0.4.1-draft): REQUIRED — update-v041, review-v040-recheck,
+    priemka-v040, tests/dom-stub.js, tests/render-smoke.js (волна v0.4.1,
+    АН-27); MD-скан (группы 4–6) исключает только etalon-sint.md вместо
+    всего каталога etalon — metrika.md входит в гигиену (rev040-В11);
+    группа 13 — счётчик позиций §2 update-инструкций (rev040-В09).
   v1.7 (0.4.0-draft): REQUIRED — toc.js, update-v040, review-v040 (волна v0.4.0).
   v1.6 (0.3.1-draft): REQUIRED — update-v031, priemka-v030, ai-brief.
   v1.5 (0.3.0-draft): REQUIRED — docs/update/update-v030.md.
@@ -79,8 +86,10 @@ REQUIRED = [
     'docs/update/update-v003.md', 'docs/update/update-v010.md',
     'docs/update/update-v011.md', 'docs/update/update-v020.md',
     'docs/update/update-v030.md', 'docs/update/update-v031.md',
-    'docs/update/update-v040.md', 'docs/review/review-v040.md',
-    'docs/priemka/priemka-v030.md', 'docs/review/ai-brief.md',
+    'docs/update/update-v040.md', 'docs/update/update-v041.md',
+    'docs/review/review-v040.md', 'docs/review/review-v040-recheck.md',
+    'docs/priemka/priemka-v030.md', 'docs/priemka/priemka-v040.md',
+    'docs/review/ai-brief.md',
     'docs/setup/setup-repo-pages.md',
     'assets/css/fonts.css', 'assets/css/tokens.css', 'assets/css/editor.css',
     'assets/css/theme-book.css', 'assets/css/print.css',
@@ -93,6 +102,7 @@ REQUIRED = [
     'assets/fonts/manifest.json',
     'data/etalon/etalon-sint.md', 'data/etalon/metrika.md',
     'tests/check-repo.py', 'tests/parser-smoke.js',
+    'tests/dom-stub.js', 'tests/render-smoke.js',
 ]
 
 missing = [r for r in REQUIRED if not os.path.exists(os.path.join(ROOT, r))]
@@ -140,12 +150,21 @@ GRIMOIRE_OK = {
 }
 CJK = re.compile(r'[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]')
 
+# rev040-В11 (v1.8): из MD-скана исключается ТОЛЬКО файл эталона
+# (синтетический наполнитель — гигиена заголовков/опечаток там бессмысленна);
+# metrika.md — живой документ и входит в скан (прежде каталог etalon
+# исключался целиком, и опечатки metrika.md выпадали из проверки).
+MD_SCAN_EXCLUDE = {'data/etalon/etalon-sint.md'}
+
 md_files = []
 for dp, dn, fn in os.walk(ROOT):
-    dn[:] = [d for d in dn if d not in ('.git', 'node_modules', 'etalon')]
+    dn[:] = [d for d in dn if d not in ('.git', 'node_modules')]
     for f in fn:
         if f.endswith('.md'):
-            md_files.append(os.path.join(dp, f))
+            p = os.path.join(dp, f)
+            if rel(p) in MD_SCAN_EXCLUDE:
+                continue
+            md_files.append(p)
 
 problems4, problems5, problems6 = [], [], []
 for p in md_files:
@@ -283,14 +302,37 @@ if not os.path.exists(et2):
     et_fail.append('нет metrika.md')
 fail('12.эталон', '; '.join(et_fail)) if et_fail else ok('12.эталон: файл и метрики на месте')
 
+# ------------------------- 13. update-инструкции: счётчик позиций §2 (В-09)
+upd_dir = os.path.join(ROOT, 'docs/update')
+cnt_fail = []
+if os.path.isdir(upd_dir):
+    for f in sorted(os.listdir(upd_dir)):
+        mver = re.match(r'update-v(\d)(\d)(\d)\.md$', f)
+        if not mver:
+            continue
+        if tuple(int(x) for x in mver.groups()) < (0, 4, 1):
+            continue  # исторические [Н]-файлы не перепроверяются (регламент §7.1)
+        s2 = read(os.path.join(upd_dir, f))
+        msec = re.search(r'(?ms)^## 2\..*?(?=^## 3\.)', s2)
+        if not msec:
+            cnt_fail.append(f'{f}: раздел §2 не найден')
+            continue
+        m2 = re.search(r'(?m)^## 2\.[^(]*\((\d+)\s+позици', s2)
+        rows = len(re.findall(r'(?ms)^\|\s*`', msec.group(0)))
+        if not m2:
+            cnt_fail.append(f'{f}: §2 — нет счётчика позиций в заголовке')
+        elif int(m2.group(1)) != rows:
+            cnt_fail.append(f'{f}: §2 заявлено {m2.group(1)}, строк таблиц {rows}')
+fail('13.update §2', '; '.join(cnt_fail)) if cnt_fail else ok('13.update §2: счётчики позиций = строки таблиц (v041+)')
+
 # ------------------------------------------------------------------- итог
 print('=' * 62)
-for p in PASSES:
-    print('  PASS', p)
+for p2 in PASSES:
+    print('  PASS', p2)
 if FAILURES:
     print('-' * 62)
-    for f in FAILURES:
-        print('  FAIL', f)
+    for f2 in FAILURES:
+        print('  FAIL', f2)
 print('=' * 62)
 print(f'ИТОГ: {"ЗЕЛЁНЫЙ (exit 0)" if not FAILURES else "КРАСНЫЙ (exit 1)"} — '
       f'{len(PASSES)} групп OK, {len(FAILURES)} провалов')
