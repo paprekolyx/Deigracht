@@ -27,6 +27,8 @@
   v1.0 (0.1.0-draft): первый состав — 12 групп проверок (волна v0.1.0);
     REQUIRED включает tests/parser-smoke.js (регресс эталона — метрики в
     data/etalon/metrika.md).
+  v1.2 (0.1.2-draft): REQUIRED — .nojekyll в корне (отключение Jekyll на
+    GitHub Pages: синтаксис V3 `{{…}}` конфликтует с Liquid, волна v0.1.2).
   v1.1 (0.1.1-draft): REQUIRED — data/etalon/etalon-sint.md вместо копии
     документа владельца (решение владельца 07.10.2026: авторский текст
     не публикуется — синтетическая структурная копия; грабля №12 регламента).
@@ -61,7 +63,7 @@ def read(p, binary=False):
 
 # ---------------------------------------------------------------- 1. REQUIRED
 REQUIRED = [
-    'README.md', 'LICENSE.md', 'SECURITY.md', '.gitignore',
+    'README.md', 'LICENSE.md', 'SECURITY.md', '.gitignore', '.nojekyll',
     'index.html', '404.html',
     'docs/reglament.md', 'docs/reestr.md', 'docs/tehpasport.md',
     'docs/feature-proposals.md',
