@@ -27,6 +27,9 @@
   v1.0 (0.1.0-draft): первый состав — 12 групп проверок (волна v0.1.0);
     REQUIRED включает tests/parser-smoke.js (регресс эталона — метрики в
     data/etalon/metrika.md).
+  v1.5 (0.3.0-draft): REQUIRED — docs/update/update-v030.md.
+  v1.4 (0.3.0-draft): REQUIRED — help.html, snippets.js, export.js, help.js
+    (волна v0.3.0); пары JS↔HTML считаются по index/404/help.
   v1.3 (0.2.0-draft): REQUIRED — docs/update/update-v020.md (волна v0.2.0).
   v1.2 (0.1.2-draft): REQUIRED — .nojekyll в корне (отключение Jekyll на
     GitHub Pages: синтаксис V3 `{{…}}` конфликтует с Liquid, волна v0.1.2).
@@ -65,7 +68,7 @@ def read(p, binary=False):
 # ---------------------------------------------------------------- 1. REQUIRED
 REQUIRED = [
     'README.md', 'LICENSE.md', 'SECURITY.md', '.gitignore', '.nojekyll',
-    'index.html', '404.html',
+    'index.html', '404.html', 'help.html',
     'docs/reglament.md', 'docs/reestr.md', 'docs/tehpasport.md',
     'docs/feature-proposals.md',
     'docs/plan/plan-razrabotki.md', 'docs/plan/otchet.md',
@@ -73,12 +76,14 @@ REQUIRED = [
     'docs/update/update-v001.md', 'docs/update/update-v002.md',
     'docs/update/update-v003.md', 'docs/update/update-v010.md',
     'docs/update/update-v011.md', 'docs/update/update-v020.md',
+    'docs/update/update-v030.md',
     'docs/setup/setup-repo-pages.md',
     'assets/css/fonts.css', 'assets/css/tokens.css', 'assets/css/editor.css',
     'assets/css/theme-book.css', 'assets/css/print.css',
     'assets/js/config.js', 'assets/js/util.js', 'assets/js/parser.js',
     'assets/js/blocks.js', 'assets/js/render.js', 'assets/js/pages.js',
     'assets/js/editor.js', 'assets/js/storage.js', 'assets/js/pdf.js',
+    'assets/js/snippets.js', 'assets/js/export.js', 'assets/js/help.js',
     'assets/img/parchment.svg', 'assets/img/favicon.svg',
     'assets/fonts/manifest.json',
     'data/etalon/etalon-sint.md', 'data/etalon/metrika.md',
@@ -158,7 +163,7 @@ fail('5.сторонние проекты', 'упоминания вне otchet.
 fail('6.прежнее имя', '«Grimoire» вне разрешённых: ' + ', '.join(problems6)) if problems6 else ok('6.прежнее имя: только исторические файлы')
 
 # ------------------------------------------- 7-8. ресурсы HTML, пары JS/CSS↔HTML
-html_files = ['index.html', '404.html']
+html_files = ['index.html', '404.html', 'help.html']
 res_fail = []
 referenced_js, referenced_css = set(), set()
 for hf in html_files:
@@ -199,7 +204,7 @@ orphan_js = all_js - referenced_js
 if orphan_js:
     fail('8.пары', 'JS не подключён ни к одной странице: ' + ', '.join(sorted(orphan_js)))
 else:
-    ok(f'8.пары: все {len(all_js)} JS-модулей подключены; CSS-ссылок: {len(referenced_css)}')
+    ok(f'8.пары: все {len(all_js)} JS-модулей подключены (index/help); CSS-ссылок: {len(referenced_css)}')
 
 # --------------------------------------------------- 9. баланс парных тегов HTML
 STRICT_TAGS = ['div', 'section', 'main', 'header', 'footer', 'nav', 'label',
