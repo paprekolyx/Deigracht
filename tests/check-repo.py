@@ -27,6 +27,8 @@
   v1.0 (0.1.0-draft): первый состав — 12 групп проверок (волна v0.1.0);
     REQUIRED включает tests/parser-smoke.js (регресс эталона — метрики в
     data/etalon/metrika.md).
+  v1.7 (0.4.0-draft): REQUIRED — toc.js, update-v040, review-v040 (волна v0.4.0).
+  v1.6 (0.3.1-draft): REQUIRED — update-v031, priemka-v030, ai-brief.
   v1.5 (0.3.0-draft): REQUIRED — docs/update/update-v030.md.
   v1.4 (0.3.0-draft): REQUIRED — help.html, snippets.js, export.js, help.js
     (волна v0.3.0); пары JS↔HTML считаются по index/404/help.
@@ -76,13 +78,16 @@ REQUIRED = [
     'docs/update/update-v001.md', 'docs/update/update-v002.md',
     'docs/update/update-v003.md', 'docs/update/update-v010.md',
     'docs/update/update-v011.md', 'docs/update/update-v020.md',
-    'docs/update/update-v030.md',
+    'docs/update/update-v030.md', 'docs/update/update-v031.md',
+    'docs/update/update-v040.md', 'docs/review/review-v040.md',
+    'docs/priemka/priemka-v030.md', 'docs/review/ai-brief.md',
     'docs/setup/setup-repo-pages.md',
     'assets/css/fonts.css', 'assets/css/tokens.css', 'assets/css/editor.css',
     'assets/css/theme-book.css', 'assets/css/print.css',
     'assets/js/config.js', 'assets/js/util.js', 'assets/js/parser.js',
     'assets/js/blocks.js', 'assets/js/render.js', 'assets/js/pages.js',
     'assets/js/editor.js', 'assets/js/storage.js', 'assets/js/pdf.js',
+    'assets/js/toc.js',
     'assets/js/snippets.js', 'assets/js/export.js', 'assets/js/help.js',
     'assets/img/parchment.svg', 'assets/img/favicon.svg',
     'assets/fonts/manifest.json',

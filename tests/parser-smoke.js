@@ -245,6 +245,41 @@ if (!fs.existsSync(etalonPath)) {
     '| строк', src.split('\n').length);
 }
 
+/* ---------- 4. автооглавление (toc.js, волна v0.4.0, fp №11) ---------- */
+/* DOM не нужен: тестируется чистая логика состава; карта страниц
+   (pagesFromDom/collect) проверяется в браузере приёмкой волны 4. */
+vm.runInThisContext(fs.readFileSync(path.join(root, 'assets/js', 'toc.js'), 'utf8'),
+  { filename: 'toc.js' });
+const toc = global.DG.toc;
+eq('toc.parseSpec: дефолт auto = уровни 3-3', toc.parseSpec('toc,auto'),
+  { auto: true, from: 3, to: 3 });
+eq('toc.parseSpec: диапазон 1-3', toc.parseSpec('toc,auto:1-3'),
+  { auto: true, from: 1, to: 3 });
+eq('toc.parseSpec: один уровень', toc.parseSpec('toc,auto:2'),
+  { auto: true, from: 2, to: 2 });
+eq('toc.parseSpec: обратный диапазон разворачивается', toc.parseSpec('toc,auto:4-2'),
+  { auto: true, from: 2, to: 4 });
+eq('toc.parseSpec: ручной toc не тронут', toc.parseSpec('toc,wide'),
+  { auto: false, from: 3, to: 3 });
+eq('toc.textOf: разметка снимается',
+  toc.textOf(parse('## Глава **первая** `код`\n').blocks[0].in), 'Глава первая код');
+eq('toc.collectHeadings: вложенные в V3 не входят',
+  toc.collectHeadings(parse('{{monster\n### Действия\n}}\n# Часть\n## Раздел\n').blocks),
+  [{ lvl: 1, text: 'Часть' }, { lvl: 2, text: 'Раздел' }]);
+eq('toc.buildEntries: фильтр уровней и номер страницы',
+  toc.buildEntries([{ lvl: 2, text: 'А' }, { lvl: 3, text: 'Б' }], [5, 7],
+    toc.parseSpec('toc,auto')),
+  [{ lvl: 3, text: 'Б', hid: 1, page: 7 }]);
+/* DoD волны 4: автосостав эталона = состав ручного TOC владельца
+   (82 записи = h3; метрики эталона заморожены: metrika.md, fp №11) */
+const etalonSrc4 = fs.readFileSync(
+  path.join(root, 'data/etalon/etalon-sint.md'), 'utf8');
+const etalonBlocks = parse(etalonSrc4).blocks;
+eq('DoD fp №11: автосостав эталона (h3) = 82 = ручной TOC владельца',
+  toc.buildEntries(toc.collectHeadings(etalonBlocks), [], toc.parseSpec('toc,auto')).length, 82);
+const manualToc = etalonBlocks.find(b => b.t === 'v3' && /^toc\b/.test(b.modsRaw));
+is('эталон: ручной {{toc}} на месте (ручной режим поддержан)', !!manualToc);
+
 console.log('='.repeat(56));
 console.log(`ИТОГ: ${passes} OK, ${fails} FAIL → ${fails ? 'КРАСНЫЙ' : 'ЗЕЛЁНЫЙ'}`);
 process.exit(fails ? 1 : 0);
