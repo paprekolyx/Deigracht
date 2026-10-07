@@ -2,10 +2,10 @@
    SITE_VERSION — точка синхронизации версий (регламент §1.4): значение
    обязано совпадать с шапками README.md / LICENSE.md / SECURITY.md
    (сверяет tests/check-repo.py). Секреты и ключи в этом файле не хранятся
-   никогда — сервера нет (SECURITY.md §1). Волна v0.1.0. */
+   никогда — сервера нет (SECURITY.md §1). Волна v0.1.1. */
 'use strict';
 
-const SITE_VERSION = '0.1.0-draft';
+const SITE_VERSION = '0.1.1-draft';
 
 /* Единое пространство имён модулей (vanilla JS без сборки — ADR-001). */
 window.DG = window.DG || {};
