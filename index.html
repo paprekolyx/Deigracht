@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- CSP (SECURITY §2): скрипты/шрифты/стили файлов — только 'self';
+       'unsafe-inline' для style — инъекция @page-геометрии (pdf.js);
+       img-src data: — для будущих base64-картинок (fp №12); внешние
+       изображения документов появятся в v1.0.0 (fp №18, АН-04). -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <title>Deigracht — редактор документов для D&amp;D</title>
+  <meta name="description" content="Бесплатный редактор хоумбрю-документов для D&D: Markdown — книжный разворот, экспорт в PDF. Черновик v0.x: документы хранятся только в вашем браузере.">
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+  <link rel="stylesheet" href="assets/css/fonts.css">
+  <link rel="stylesheet" href="assets/css/tokens.css">
+  <link rel="stylesheet" href="assets/css/editor.css">
+  <link rel="stylesheet" href="assets/css/theme-book.css">
+  <link rel="stylesheet" href="assets/css/print.css">
+</head>
+<body>
+
+  <!-- тулбар -->
+  <header class="toolbar ui">
+    <span class="brand">
+      <img class="brand-mark" src="assets/img/favicon.svg" alt="">Deigracht
+    </span>
+    <span class="chip" id="version" title="Версия — точка синхронизации (регламент §1.4)"></span>
+    <span class="chip" title="Черновик: сервера нет, документы хранятся только в этом браузере (SECURITY.md)">документы — только в вашем браузере</span>
+    <nav class="tools" aria-label="Действия с документом">
+      <button class="btn" id="btn-open" type="button" title="Открыть файл .md/.txt (или перетащите файл в панель исходника)">Открыть .md</button>
+      <button class="btn" id="btn-save" type="button" title="Скачать документ файлом .md (совместим с Homebrewery)">Сохранить .md</button>
+      <button class="btn" id="btn-demo" type="button" title="Загрузить демонстрационный документ">Пример</button>
+      <button class="btn btn--primary" id="btn-print" type="button" title="Настройки печати и сохранение в PDF (Ctrl+P)">Печать / PDF</button>
+    </nav>
+    <input type="file" id="file-open" accept=".md,.txt,.markdown,text/markdown,text/plain" hidden>
+  </header>
+
+  <!-- рабочая область: исходник | разворот -->
+  <main class="workspace" id="workspace">
+    <section class="pane pane-editor ui" id="pane-editor" aria-label="Исходник документа">
+      <div class="pane-title">Исходник · Markdown + блоки V3 · автосохранение в браузере</div>
+      <textarea id="src" spellcheck="false" aria-label="Исходный текст документа"
+        placeholder="Пишите здесь: # Заголовок, **жирный**, *курсив*, таблицы, списки, \page — разрыв страницы…"></textarea>
+    </section>
+    <div class="divider ui" id="divider" role="separator" aria-orientation="vertical"
+         title="Перетащите, чтобы изменить ширину панелей"></div>
+    <section class="pane pane-preview" aria-label="Книжный разворот">
+      <div class="pane-title">Книжный разворот <span id="format-label"></span></div>
+      <div class="pages-scroll" id="pages-scroll">
+        <div id="pages" data-format="letter"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- статус-бар -->
+  <footer class="statusbar ui">
+    <span class="stat" id="cnt-pages"></span>
+    <span class="stat" id="cnt-words"></span>
+    <span class="stat" id="cnt-chars"></span>
+    <span id="warnings"></span>
+    <span class="grow"></span>
+    <span id="save-state"></span>
+    <span class="hint-note">Deigracht · <span id="version2"></span> · черновик v0.x ·
+      не аффилирован с Wizards of the Coast (Fan Content Policy)</span>
+  </footer>
+
+  <!-- модальное окно печати (требование владельца 07.10.2026:
+       фоновый скролл заблокирован, пока окно открыто — pdf.js) -->
+  <div class="modal ui" id="print-modal" hidden role="dialog" aria-modal="true" aria-labelledby="print-title">
+    <div class="modal-box">
+      <h2 id="print-title">Печать и PDF</h2>
+      <label class="fmt-row">
+        <input type="radio" name="page-format" value="letter" checked>
+        <span class="fmt-label">Letter</span>
+      </label>
+      <label class="fmt-row">
+        <input type="radio" name="page-format" value="a4">
+        <span class="fmt-label">A4</span>
+      </label>
+      <p class="modal-hint">
+        Одна страница разворота = одна страница PDF. В диалоге печати выберите
+        принтер «Сохранить как PDF», поля — «Нет», масштаб — 100%.
+        Дефолт — Letter: геометрия эталона (на A4 у Homebrewery оставались
+        белые полосы внизу — ВЛ-07).
+      </p>
+      <div class="modal-actions">
+        <button class="btn" id="print-cancel" type="button">Отмена</button>
+        <button class="btn btn--primary" id="print-go" type="button">Печать…</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- модули без сборки (ADR-001): порядок значим -->
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/util.js"></script>
+  <script src="assets/js/parser.js"></script>
+  <script src="assets/js/blocks.js"></script>
+  <script src="assets/js/render.js"></script>
+  <script src="assets/js/pages.js"></script>
+  <script src="assets/js/storage.js"></script>
+  <script src="assets/js/pdf.js"></script>
+  <script src="assets/js/editor.js"></script>
+</body>
+</html>
