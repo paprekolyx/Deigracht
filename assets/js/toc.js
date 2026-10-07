@@ -10,43 +10,62 @@
    совпадает с ручным TOC по составу). Диапазон уровней перекрывается
    N-M: {{toc,auto:1-3}} — части, разделы и главы с отступами по уровням,
    {{toc,auto:2}} — только разделы.
-   Якоря строк — #pN: клик прокручивает к странице N (editor.js).
+   Якоря строк — #pN: клик прокручивает к странице N (editor.js, help.js).
    Заголовки, вложенные в V3-блоки (статблоки, врезки), в состав не входят
    и data-hid не получают (render.js) — оглавление не засоряется.
    Чистая логика (parseSpec / textOf / collectHeadings / buildEntries)
-   тестируется без DOM в tests/parser-smoke.js (раздел 4).
+   тестируется без DOM в tests/parser-smoke.js (раздел 4); рендер —
+   в tests/render-smoke.js (DOM-заглушка).
    Безопасность (SECURITY §2): DOM строится программно (DG.util.el),
    текст заголовков попадает только в textContent; якоря #pN — относительные
-   (safeUrl-разрешённые), внешние ссылки из оглавления невозможны. */
+   (safeUrl-разрешённые), внешние ссылки из оглавления невозможны.
+
+   v0.4.1 (rev040):
+   - Н-05: state.rendered — КАРТА spec-ключ → показанные записи: несколько
+     авто-оглавлений с разными диапазонами сравниваются каждое со своим
+     слотом — ложная «несходимость» (3 прохода + предупреждение) устранена;
+   - Н-06: parseSpec ловит токен `auto` независимо от корректности диапазона:
+     однозначные цифры clamp'ятся 1–6 (Ф-03), прочее (`auto:10`, `auto:2-`,
+     `auto:x`) — флаг badRange и честная плашка «некорректный диапазон
+     уровней» вместо молчаливого пустого ручного nav. */
 'use strict';
 
 DG.toc = (function () {
 
   /* Состояние проходов: headings — состав заголовков текущего документа,
      pageMap — hid → номер страницы с последнего прохода пагинации,
-     rendered — что фактически показано в оглавлении на этом проходе. */
-  var state = { headings: [], pageMap: null, rendered: null, entries: null };
+     rendered — карта spec-ключ → записи, фактически показанные в
+     оглавлениях на этом проходе (rev040-Н05). */
+  var state = { headings: [], pageMap: null, rendered: {}, entries: null };
 
   function reset(headings) {
     state = {
       headings: headings || [],
-      pageMap: null, rendered: null, entries: null
+      pageMap: null, rendered: {}, entries: null
     };
   }
 
   /* ---------- разбор модификаторов: toc,auto / toc,auto:2-4 ---------- */
 
+  /* rev040-Н06: токен `auto` ловится независимо от корректности диапазона.
+     Корректны только однозначные цифры (0 и 9 clamp'ятся в 1–6 — Ф-03);
+     `auto:10`, `auto:2-`, `auto:x` — auto: true + badRange: честная плашка
+     вместо молчаливого пустого оглавления. */
   function parseSpec(modsRaw) {
     var toks = String(modsRaw || '').split(/[,;]/);
-    var spec = { auto: false, from: 3, to: 3 };
+    var spec = { auto: false, from: 3, to: 3, badRange: false };
     for (var i = 0; i < toks.length; i++) {
-      var m = /^auto(?::\s*(\d)(?:\s*-\s*(\d))?)?$/.exec(toks[i].trim());
+      var tok = toks[i].trim();
+      var m = /^auto(?::\s*(\d)(?:\s*-\s*(\d))?)?$/.exec(tok);
       if (m) {
         spec.auto = true;
         if (m[1]) {
           spec.from = parseInt(m[1], 10);
           spec.to = m[2] ? parseInt(m[2], 10) : spec.from;
         }
+      } else if (/^auto\b/.test(tok)) {
+        spec.auto = true;
+        spec.badRange = true;
       }
     }
     if (spec.from > spec.to) {
@@ -59,28 +78,63 @@ DG.toc = (function () {
     return spec;
   }
 
-  /* Первый авто-узел документа: спецификация одна на документ —
-     оглавлений-авто может быть несколько, карта страниц общая. */
+  /* Ключ слота сходимости: оглавления с одинаковым диапазоном сравниваются
+     с одним слотом (rev040-Н05). */
+  function specKey(spec) { return spec.from + '-' + spec.to; }
+
+  /* Первый авто-узел документа: карта страниц общая для всех оглавлений.
+     v0.4.1: учитываются только блоки {{toc…}} — токен `auto` в других
+     модификаторах ({{pageNumber,auto}}) авто-оглавлением не является
+     (иначе — ложная несходимость проходов, класс rev040-Н05). */
+  function firstModOf(modsRaw) {
+    return String(modsRaw || '').split(/[,;]/)[0].split(/[:]/)[0].trim().toLowerCase();
+  }
   function findSpec(blocks) {
     var found = null;
     (blocks || []).forEach(function (b) {
       if (found) return;
-      if (b.t === 'v3' && parseSpec(b.modsRaw).auto) found = parseSpec(b.modsRaw);
+      if (b.t === 'v3' && firstModOf(b.modsRaw) === 'toc' &&
+          parseSpec(b.modsRaw).auto) found = parseSpec(b.modsRaw);
     });
     return found;
   }
 
+  /* Все авто-спецификации документа (rev040-Н05): уникальные по ключу,
+     в порядке появления; только блоки {{toc…}}; badRange не участвует —
+     его плашка статична. */
+  function findAllSpecs(blocks) {
+    var seen = {}, out = [];
+    (blocks || []).forEach(function (b) {
+      if (b.t !== 'v3') return;
+      if (firstModOf(b.modsRaw) !== 'toc') return;
+      var sp = parseSpec(b.modsRaw);
+      if (!sp.auto || sp.badRange) return;
+      var k = specKey(sp);
+      if (seen[k]) return;
+      seen[k] = true;
+      out.push(sp);
+    });
+    return out;
+  }
+
   /* ---------- чистая логика состава ---------- */
 
-  /* Плоский текст инлайнов заголовка (жирный/курсив/код — без разметки). */
-  function textOf(inl) {
+  /* Плоский текст инлайнов заголовка (жирный/курсив/код — без разметки).
+     v0.4.1 (сопутствующая правка, найдено render-smoke при проверке Н-01):
+     схлопывание пробелов и trim — только верхнего уровня; вложенные инлайны
+     сохраняют краевые пробелы (прежде «Глава ** а **» теряла пробелы
+     вложенного содержимого — метка оглавления могла склеивать слова). */
+  function flatOf(inl) {
     var out = '';
     (inl || []).forEach(function (n) {
       if (n.t === 'text' || n.t === 'code') out += n.v;
       else if (n.t === 'img') out += (n.alt || '');
-      else if (n.in) out += textOf(n.in);
+      else if (n.in) out += flatOf(n.in);
     });
-    return out.replace(/\s+/g, ' ').trim();
+    return out;
+  }
+  function textOf(inl) {
+    return flatOf(inl).replace(/\s+/g, ' ').trim();
   }
 
   /* Заголовки верхнего уровня в порядке рендера. */
@@ -126,6 +180,17 @@ DG.toc = (function () {
   function buildNav(entries, spec) {
     var nav = DG.util.el('nav', 'block-toc block-toc--auto');
     var ul = DG.util.el('ul');
+    if (spec && spec.badRange) {
+      /* rev040-Н06: некорректный диапазон — честная плашка, а не молчаливый
+         пустой nav; в сходимости проходов такое оглавление не участвует */
+      ul.appendChild(DG.util.el('li', 'toc-empty toc-invalid', {
+        text: 'Оглавление: некорректный диапазон уровней в {{toc,auto:…}} — '
+          + 'верно: {{toc,auto}}, {{toc,auto:N}} или {{toc,auto:N-M}} '
+          + '(уровни 1–6)'
+      }));
+      nav.appendChild(ul);
+      return nav;
+    }
     if (!(entries && entries.length)) {
       /* заголовков выбранного диапазона нет — честная плашка, а не
          пустой блок (находка ревью R1-02) */
@@ -152,7 +217,7 @@ DG.toc = (function () {
       ul.appendChild(li);
     });
     nav.appendChild(ul);
-    state.rendered = (entries || []).map(function (e) {
+    state.rendered[specKey(spec)] = (entries || []).map(function (e) {
       return { lvl: e.lvl, text: e.text, hid: e.hid, page: e.page };
     });
     return nav;
@@ -166,20 +231,29 @@ DG.toc = (function () {
 
   /* ---------- сходимость проходов (editor.js / help.js) ---------- */
 
-  /* После пагинации: пересчитать карту и состав; вернуть true, если
-     оглавление на этом проходе уже показывало эти же номера (устойчивость). */
+  /* После пагинации: пересчитать карту и состав; вернуть true, если ВСЕ
+     авто-оглавления на этом проходе уже показывали эти же номера
+     (устойчивость). rev040-Н05: сравнение — по слоту каждой спецификации,
+     а не по первому оглавлению: разные диапазоны больше не дают ложной
+     несходимости. */
   function collect(blocks, pagesRoot) {
-    var spec = findSpec(blocks);
-    if (!spec) {
+    var specs = findAllSpecs(blocks);
+    if (!specs.length) {
       state.pageMap = [];
       state.entries = [];
       return true;
     }
     var pm = pagesFromDom(pagesRoot);
-    var entries = buildEntries(collectHeadings(blocks), pm, spec);
-    var same = JSON.stringify(entries) === JSON.stringify(state.rendered);
+    var hs = collectHeadings(blocks);
+    var same = true;
+    for (var i = 0; i < specs.length; i++) {
+      var entries = buildEntries(hs, pm, specs[i]);
+      var prev = state.rendered[specKey(specs[i])];
+      if (JSON.stringify(entries) !==
+          JSON.stringify(prev === undefined ? null : prev)) same = false;
+      if (i === 0) state.entries = entries;
+    }
     state.pageMap = pm;
-    state.entries = entries;
     return same;
   }
 
@@ -188,8 +262,11 @@ DG.toc = (function () {
   return {
     reset: reset,
     parseSpec: parseSpec,
+    specKey: specKey,
     findSpec: findSpec,
+    findAllSpecs: findAllSpecs,
     textOf: textOf,
+    flatOf: flatOf,
     collectHeadings: collectHeadings,
     pagesFromDom: pagesFromDom,
     buildEntries: buildEntries,

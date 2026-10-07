@@ -13,7 +13,20 @@
      пустую страницу, разрезается по атомарным единицам (слова абзаца,
      li списка, tr таблицы с повтором шапки, дочерние элементы контейнера)
      бинарным поиском по измерению; неразрезаемое (h1–h6, hr, плейсхолдеры)
-     — прежняя честная отметка переполнения. */
+     — прежняя честная отметка переполнения.
+
+   Новое в v0.4.1 (rev040, решения владельца):
+   - Н-01: тело {{column-count:N …}} (дочерние элементы директивы)
+     выкладывается первыми items на N-колоночной странице — текст больше
+     не теряется;
+   - Н-02: пустая текущая страница принимает колонки директивы без закрытия
+     (прежняя логика оставляла пустую страницу — класс дефекта pr030-З1);
+   - ВЛ-15 (ответ В-1 — гибрид): таблица выше колонки получает по замеру
+     класс table-wrap--split — CSS дробит её по строкам с повтором шапки
+     (thead: table-header-group, tr: break-inside avoid); короткая идёт
+     целиком (break-inside: avoid). Замер — только в браузере: в DOM-заглушке
+     (tests/dom-stub.js) layout отсутствует, clientHeight = 0 — разметка
+     классом пропускается. */
 'use strict';
 
 DG.pages = (function () {
@@ -36,6 +49,33 @@ DG.pages = (function () {
   }
   function hasContent(body) {
     return body.childElementCount > 0;
+  }
+
+  /* rev040-Н02: применение N колонок к текущей (пустой) странице —
+     без закрытия: класс page--cols-N и data-cols, как в makePage */
+  function setPageCols(p, cols) {
+    p.cols = cols;
+    p.page.setAttribute('data-cols', String(cols));
+    for (var k = 1; k <= 4; k++) p.page.classList.remove('page--cols-' + k);
+    if (cols !== DEFAULT_COLS) p.page.classList.add('page--cols-' + cols);
+  }
+
+  /* ВЛ-15 (ответ В-1 — гибрид): таблица выше колонки — класс
+     table-wrap--split (CSS: break-inside auto, tr не режется, thead
+     повторяется на фрагментах); помещается в колонку — класс снимается
+     (таблица идёт целиком, break-inside: avoid). Замер браузерный:
+     в DOM-заглушке clientHeight = 0 — разметка пропускается. */
+  function markLongTables(body) {
+    var colH = body.clientHeight;
+    if (!colH) return;
+    var wraps = body.querySelectorAll('.table-wrap');
+    for (var w = 0; w < wraps.length; w++) {
+      var t = wraps[w];
+      if (typeof t.getBoundingClientRect !== 'function') continue;
+      var h = t.getBoundingClientRect().height;
+      if (h > colH + 2) t.classList.add('table-wrap--split');
+      else t.classList.remove('table-wrap--split');
+    }
   }
 
   /* ---------- дробление oversized-блоков ---------- */
@@ -165,10 +205,16 @@ DG.pages = (function () {
         continue;
       }
 
-      /* директива колонок: новая страница с N колонками */
+      /* директива колонок: N колонок — текущей пустой странице (rev040-Н02:
+         без пустой страницы-вставки) или новой странице; тело директивы
+         (rev040-Н01) — отцепляем и выкладываем следующими items потока */
       if (it.classList && it.classList.contains('block-colcount')) {
         var cols = parseInt(it.getAttribute('data-cols'), 10) || DEFAULT_COLS;
-        if (hasContent(current.body) || current.cols !== cols) closePage(cols);
+        if (hasContent(current.body)) closePage(cols);
+        else if (current.cols !== cols) setPageCols(current, cols);
+        var kids = Array.prototype.slice.call(it.children);
+        for (var kd = 0; kd < kids.length; kd++) it.removeChild(kids[kd]);
+        if (kids.length) items.splice.apply(items, [i + 1, 0].concat(kids));
         i++;
         continue;
       }
@@ -182,6 +228,10 @@ DG.pages = (function () {
         i++; added++;
       }
 
+      /* замер длинных таблиц (ВЛ-15) — до отката: дробление меняет
+         наполнение колонок и результат измерения переполнения */
+      if (added) markLongTables(current.body);
+
       /* откат до границы переполнения */
       while (added > 0 && overflows(current.body)) {
         current.body.removeChild(current.body.lastElementChild);
@@ -194,6 +244,7 @@ DG.pages = (function () {
         if (parts) {
           splitCount++;
           current.body.appendChild(parts[0]);
+          markLongTables(current.body);
           items.splice(i, 1, parts[1]); /* хвост — на следующую страницу */
           closePage(current.cols);
           continue;

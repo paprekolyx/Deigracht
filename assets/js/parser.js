@@ -7,8 +7,18 @@
    Безопасность (SECURITY §2): парсер возвращает только данные (AST);
    HTML-теги в исходнике НЕ исполняются — попадают в текст и экранируются
    на этапе render.js (textContent). innerHTML не используется.
+   Ссылки (включая autolink `<mailto:…>`) проходят whitelist safeUrl
+   на этапе рендера — схемы http/https/mailto + относительные и якоря
+   (ответ владельца В-3, 07.10.2026; SECURITY §2).
 
-   Ограничения v0.1.0 (техпаспорт §10): списки — до 3 уровней вложенности;
+   v0.4.1 (rev040-Н10): внутрисловный `_` — литерал (GFM/Homebrewery):
+   выделение `_…_`/`__…__`/`___…___` применяется только на границах слов
+   (`snake_case_var`, `значение_курсив_значение` не курсивятся);
+   расхождение зафиксировано — otchet §1.4.
+
+   Границы (техпаспорт §10): списки — вложенность произвольной глубины
+   (rev040-В12: ограничение «до 3 уровней» в ранних документах не
+   соответствовало коду; продолжение текста элемента — ограниченно);
    setext-заголовки (подчёркиванием) не поддерживаются (--- трактуется как
    линейка); \page — только отдельной строкой. */
 'use strict';
@@ -31,6 +41,8 @@ DG.parser = (function () {
     code:         /^`([^`]+)`/
   };
   var ESCAPABLE = /[\\`*_{}\[\]()#+\-.!>~|]/;
+  /* rev040-Н10: «символ слова» для границ `_` — латиница/цифры/_/кириллица */
+  var WORD_CH = /[\w\u0400-\u045F]/;
 
   function parseInline(src) {
     var s = String(src);
@@ -71,10 +83,19 @@ DG.parser = (function () {
         var pairs = c === '*'
           ? [[RE.strongEmStar, 'bi'], [RE.strongStar, 'b'], [RE.emStar, 'i']]
           : [[RE.strongEmUnd, 'bi'], [RE.strongUnd, 'b'], [RE.emUnd, 'i']];
+        /* rev040-Н10: `_` внутри слова — литерал (GFM/Homebrewery):
+           открытие — не после символа слова, закрытие — не перед символом
+           слова; `*` границ не требует (звёздочки в тексте редки) */
+        var openOk = (c !== '_') || i === 0 || !WORD_CH.test(s[i - 1]);
         var matched = false;
-        for (var p = 0; p < pairs.length; p++) {
-          m = rest.match(pairs[p][0]);
-          if (m) {
+        if (openOk) {
+          for (var p = 0; p < pairs.length; p++) {
+            m = rest.match(pairs[p][0]);
+            if (!m) continue;
+            if (c === '_') {
+              var after = s[i + m[0].length];
+              if (after !== undefined && WORD_CH.test(after)) continue;
+            }
             pushNode({ t: pairs[p][1], in: parseInline(m[1]) });
             i += m[0].length; matched = true; break;
           }

@@ -195,10 +195,11 @@ DG.editor = (function () {
     cntWords = document.getElementById('cnt-words');
     cntChars = document.getElementById('cnt-chars');
 
-    /* версия — точка синхронизации (регламент §1.4) */
+    /* версия — точка синхронизации (регламент §1.4); rev040-Н07:
+       источник — DG.config.siteVersion (единообразно во всех модулях) */
     ['version', 'version2'].forEach(function (id) {
       var n = document.getElementById(id);
-      if (n) n.textContent = SITE_VERSION;
+      if (n) n.textContent = DG.config.siteVersion;
     });
 
     DG.pdf.init();
@@ -288,7 +289,9 @@ DG.editor = (function () {
     });
 
     renderNow();
-    if (doc !== null && !storageOk) saveNow();
+    /* (rev040 §5, мелочи: здесь было условие `doc !== null && !storageOk` —
+       всегда ложное на момент init: storageOk меняется только в saveNow;
+       удалено волной v0.4.1 — поведение не изменилось) */
   }
 
   document.addEventListener('DOMContentLoaded', init);

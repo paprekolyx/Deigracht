@@ -71,7 +71,8 @@ DG.exportHtml = (function () {
       '<head>',
       '<meta charset="utf-8">',
       '<title>' + DG.util.esc(docTitle || 'Документ Deigracht') + '</title>',
-      '<!-- Экспорт Deigracht ' + (window.SITE_VERSION || '') + ' · самодостаточный файл:',
+      '<!-- Экспорт Deigracht ' + ((DG.config && DG.config.siteVersion) || '') +
+        ' · самодостаточный файл:',
       '     стили и шрифты встроены; открывается без интернета; печать = PDF -->',
       '<style>' + styles + '</style>',
       '<style>' + EXPORT_LAYOUT + '</style>',

@@ -15,15 +15,21 @@ DG.util = (function () {
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
-  /* Whitelist схем URL (SECURITY §2): http/https + относительные + якоря.
-     javascript:, data: и прочие — отклоняются. Управляющие символы,
-     нулевые байты и пробелы вычищаются до проверки (обход «java\tscript:»).
+  /* Whitelist схем URL (SECURITY §2): http/https/mailto (ответ владельца
+     В-3, 07.10.2026 — rev040-Н09) + относительные + якоря.
+     javascript:, data: и прочие схемы — отклоняются. Protocol-relative
+     `//host/…` — отклоняется (rev040-Н09: выглядит относительным, но ведёт
+     на внешний хост). Управляющие символы, нулевые байты и пробелы
+     вычищаются до проверки схемы (обход «java\tscript:»).
      Возвращает очищенный URL или null. */
   function safeUrl(raw) {
     if (raw == null) return null;
     let s = String(raw).replace(/[\u0000-\u0020\u007F-\u00A0\s]+/g, '');
     if (!s) return null;
-    if (s.startsWith('#') || s.startsWith('/') || /^\.{0,2}\//.test(s)) return s;
+    if (s.startsWith('#')) return s;
+    if (/^mailto:/i.test(s)) return s;
+    if (s.startsWith('//')) return null; /* protocol-relative — внешний хост */
+    if (s.startsWith('/') || /^\.{0,2}\//.test(s)) return s;
     if (/^https?:\/\//i.test(s)) return s;
     if (/^[a-z][a-z0-9+.-]*:/i.test(s)) return null; /* прочая схема */
     return s; /* относительный без слэша */

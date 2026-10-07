@@ -6,15 +6,23 @@
    {{imageMask*}} — плейсхолдер до v1.0.0 (fp №18, решение владельца).
    Неизвестный модификатор — видимая плашка (честное правило совместимости,
    otchet §1.4), а не молчаливая поломка.
-   Безопасность: DOM строится программно (render.js), innerHTML не используется. */
+   Безопасность: DOM строится программно (render.js), innerHTML не используется.
+
+   v0.4.1 (rev040):
+   - Н-01: тело `{{column-count:N …}}` рендерится дочерними элементами
+     директивы — pages.js выкладывает их первыми на N-колоночной странице
+     (до этого содержимое блока молча терялось: сниппет, демо справки,
+     17 блоков эталона);
+   - Н-03: строки ручного TOC теряют литеральный префикс `####` — паттерн
+     эталона и документа владельца `- #### [{{…}}{{N}}](#pN)` (в Homebrewery
+     `####` внутри элемента списка — заголовочное оформление строки);
+     tocHeading() — чистая функция (тестируется без DOM в parser-smoke),
+     строка получает класс уровня toc-hN (оформление — theme-book.css);
+   - чистка: неиспользуемая таблица KNOWN удалена (мелочи rev040 §5). */
 'use strict';
 
 DG.blocks = (function () {
 
-  var KNOWN = {
-    wide: 1, note: 1, descriptive: 1, monster: 1, toc: 1,
-    'column-count': 1, pagenumber: 1
-  };
   function isImageMask(mod) { return /^imagemask/i.test(mod); }
 
   function firstMod(modsRaw) {
@@ -28,19 +36,48 @@ DG.blocks = (function () {
   /* ---------- оглавление: {{ X}}{{ N }} в тексте ссылки → титул + лидер + страница ---------- */
   var TOC_LABEL = /\{\{\s*([\s\S]+?)\s*\}\}\s*\{\{\s*(\d+)\s*\}\}/;
 
+  /* rev040-Н03: ATX-префикс в начале строки TOC (`#### `) — уровень
+     оформления, а не текст. Чистая функция (без DOM): {lvl, text},
+     lvl = 0 — префикса нет. */
+  var RE_TOC_HASH = /^(#{1,6})\s+/;
+  function tocHeading(text) {
+    var s = String(text == null ? '' : text);
+    var m = RE_TOC_HASH.exec(s);
+    if (!m) return { lvl: 0, text: s };
+    return { lvl: m[1].length, text: s.slice(m[0].length) };
+  }
+
   function decorateToc(box) {
     var links = box.querySelectorAll('a');
     for (var i = 0; i < links.length; i++) {
       var a = links[i];
+      var li = (a.parentNode && a.parentNode.tagName === 'LI') ? a.parentNode : null;
+      var lvl = 0;
+      /* rev040-Н03: `####` перед ссылкой живёт текстовым узлом строки —
+         снять его и запомнить уровень (класс toc-hN на строке) */
+      if (li) {
+        var sibs = Array.prototype.slice.call(li.childNodes);
+        for (var c = 0; c < sibs.length; c++) {
+          if (sibs[c].nodeType !== 3) continue;
+          var th = tocHeading(sibs[c].textContent);
+          if (!th.lvl) continue;
+          lvl = th.lvl;
+          if (th.text.trim()) sibs[c].textContent = th.text.replace(/^\s+/, '');
+          else li.removeChild(sibs[c]);
+        }
+      }
       var label = a.textContent;
+      var th2 = tocHeading(label);
+      if (th2.lvl) { label = th2.text; if (!lvl) lvl = th2.lvl; }
       var m = label.match(TOC_LABEL);
       a.className = 'toc-row';
       a.textContent = '';
-      var title = DG.util.el('span', 'toc-title', { text: m ? m[1] : label });
+      var title = DG.util.el('span', 'toc-title', { text: m ? m[1] : label.trim() });
       var dots = DG.util.el('span', 'toc-dots');
       a.appendChild(title);
       a.appendChild(dots);
       if (m) a.appendChild(DG.util.el('span', 'toc-page', { text: m[2] }));
+      if (lvl) (li || a).classList.add('toc-h' + lvl);
     }
     return box;
   }
@@ -86,12 +123,16 @@ DG.blocks = (function () {
       }
 
       case 'column-count': {
-        /* директива: pages.js закрывает текущую страницу и открывает
-           новую с N колонками; сам элемент в разворот не попадает */
+        /* Директива колонок: pages.js применяет N колонок к текущей пустой
+           странице или открывает новую (rev040-Н02); сам элемент в разворот
+           не попадает. rev040-Н01: тело блока-директивы рендерится её
+           дочерними элементами — pages.js отцепляет их и выкладывает
+           первыми items на N-колоночной странице (текст больше не теряется). */
         var n = parseInt(firstParam(node.modsRaw), 10);
         if (!(n >= 1 && n <= 4)) n = 2;
         var dir = DG.util.el('div', 'block-colcount');
         dir.setAttribute('data-cols', String(n));
+        renderBlocks(node.body || [], dir);
         return dir;
       }
 
@@ -133,5 +174,8 @@ DG.blocks = (function () {
     return box;
   }
 
-  return { render: render, firstMod: firstMod, decorateToc: decorateToc };
+  return {
+    render: render, firstMod: firstMod,
+    decorateToc: decorateToc, tocHeading: tocHeading
+  };
 })();
