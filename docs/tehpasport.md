@@ -1,6 +1,6 @@
 # Технический паспорт Deigracht
 
-**Версия проекта:** 0.1.1-draft · **Дата паспорта:** 07.10.2026
+**Версия проекта:** 0.1.2-draft · **Дата паспорта:** 07.10.2026
 **Статус:** фактическое состояние волны v0.1.0 — редактор реализован
 (статический сайт, первая кодовая волна); паспорт ведётся с волны 0
 и синхронизирован с кодом.
@@ -87,7 +87,7 @@ The Homebrewery (MIT), недоступный автору; отличия — �
 | Текстуры | CC0/собственные (пергамент, орнаменты) | не используем ассеты WotC и Homebrewery (LICENSE ч.3, ВЛ-11) |
 | PDF | print-CSS + window.print(), A4/Letter | без серверов; как в Homebrewery (браузерная печать) |
 | Хранилище | localStorage/IndexedDB | сервера нет (ВЛ-04); честные границы — SECURITY §3 |
-| Хостинг | GitHub Pages | решение владельца 07.10.2026; зеркало при блокировках — otchet §5, R5 |
+| Хостинг | GitHub Pages + `.nojekyll` (Jekyll отключён — грабля №14) | решение владельца 07.10.2026; зеркало при блокировках — otchet §5, R5 |
 | Тесты | tests/check-repo.py (с v0.1.0) | установленная практика; exit 0 = индикатор волны |
 
 ## 4. Состав репозитория
@@ -97,6 +97,8 @@ The Homebrewery (MIT), недоступный автору; отличия — �
 ```
 index.html               редактор (единственная страница черновика)
 404.html                 страница «не найдено» (для Pages)
+.nojekyll                пустой файл: Pages раздаёт статику без Jekyll
+                         (грабля №14: Liquid ломается на синтаксисе V3)
 assets/css/              tokens.css · editor.css · theme-book.css · print.css
 assets/js/               config.js (SITE_VERSION) · util.js (esc/safeUrl) ·
                          parser.js · blocks.js · render.js · pages.js ·
@@ -232,7 +234,7 @@ PDF/экспорта файлов. Упоминания «боевого бло�
 
 | Компонент | Версия | Лицензия |
 |---|---|---|
-| Код проекта | 0.1.1-draft (SITE_VERSION — config.js) | MIT (LICENSE ч.1) |
+| Код проекта | 0.1.2-draft (SITE_VERSION — config.js) | MIT (LICENSE ч.1) |
 | Alegreya (текст книги) 400/400i/700/700i | woff2 cyrillic+latin, 8 файлов | OFL 1.1 (assets/fonts/OFL-Alegreya.txt) |
 | Cormorant Unicase (заголовки-капители) 600/700 | woff2 cyrillic+latin, 4 файла | OFL 1.1 (OFL-CormorantUnicase.txt) |
 | Fira Sans Condensed (статблоки/UI) 400/400i/700 | woff2 cyrillic+latin, 6 файлов | OFL 1.1 (OFL-FiraSansCondensed.txt) |
