@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -21,23 +22,30 @@
 </head>
 <body>
 
-  <!-- тулбар -->
+  <!-- тулбар (pr040-М1, вики-заметка 1 — схема workflow владельца:
+       подготовка и работа с документом — слева; бренд, версия и
+       предупреждение черновика — в центре; экспорт документа — справа) -->
   <header class="toolbar ui">
-    <span class="brand">
-      <img class="brand-mark" src="assets/img/favicon.svg" alt="">Deigracht
-    </span>
-    <span class="chip" id="version" title="Версия — точка синхронизации (регламент §1.4)"></span>
-    <span class="chip" title="Черновик: сервера нет, документы хранятся только в этом браузере (SECURITY.md)">документы — только в вашем браузере</span>
-    <nav class="tools" aria-label="Действия с документом">
+    <nav class="tools tools--left" aria-label="Подготовка и работа с документом">
       <button class="btn" id="btn-open" type="button" title="Открыть файл .md/.txt (или перетащите файл в панель исходника)">Открыть .md</button>
-      <button class="btn" id="btn-save" type="button" title="Скачать документ файлом .md (совместим с Homebrewery)">Сохранить .md</button>
       <div class="menu-wrap">
-        <button class="btn" id="btn-snippets" type="button" aria-haspopup="true" aria-expanded="false" title="Вставить заготовку блока (fp №10)">Вставить ▾</button>
+        <button class="btn" id="btn-snippets" type="button" aria-haspopup="true" aria-expanded="false" title="Добавить заготовку блока (fp №10)">Добавить блок ▾</button>
         <div class="menu" id="snippets-menu" hidden role="menu"></div>
       </div>
-      <button class="btn" id="btn-export" type="button" title="Самодостаточный .html со шрифтами: открывается без интернета (fp №7б)">Экспорт HTML</button>
+      <span class="tools-sep" aria-hidden="true"></span>
       <a class="btn" href="help.html" title="Живой справочник синтаксиса и юридическая памятка (fp №10)">Справка</a>
       <button class="btn" id="btn-demo" type="button" title="Загрузить демонстрационный документ">Пример</button>
+    </nav>
+    <div class="toolbar-center">
+      <span class="brand">
+        <img class="brand-mark" src="assets/img/favicon.svg" alt="">Дейгрихт
+      </span>
+      <span class="chip" id="version" title="Версия — точка синхронизации (регламент §1.4)"></span>
+      <span class="chip" title="Черновик: сервера нет, документы хранятся только в этом браузере (SECURITY.md)">документы — только в вашем браузере</span>
+    </div>
+    <nav class="tools tools--right" aria-label="Экспорт документа">
+      <button class="btn" id="btn-save" type="button" title="Скачать документ файлом .md (совместим с Homebrewery)">Сохранить .md</button>
+      <button class="btn" id="btn-export" type="button" title="Самодостаточный .html со шрифтами: открывается без интернета (fp №7б)">Экспорт HTML</button>
       <button class="btn btn--primary" id="btn-print" type="button" title="Настройки печати и сохранение в PDF (Ctrl+P)">Печать / PDF</button>
     </nav>
     <input type="file" id="file-open" accept=".md,.txt,.markdown,text/markdown,text/plain" hidden>
@@ -68,7 +76,7 @@
     <span id="warnings"></span>
     <span class="grow"></span>
     <span id="save-state"></span>
-    <span class="hint-note">Deigracht · <span id="version2"></span> · черновик v0.x ·
+    <span class="hint-note">© Deigracht · <span id="version2"></span> ·
       не аффилирован с Wizards of the Coast (Fan Content Policy)</span>
   </footer>
 
