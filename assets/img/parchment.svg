@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640">
+  <!-- Deigracht · parchment.svg — текстура пергамента (собственная работа
+       проекта, CC0; лицензионная чистота — SECURITY §6, ВЛ-11: ничего
+       из ассетов WotC/Homebrewery не используется). Принцип: базовый тон
+       + мягкие пятна + мелкий шум feTurbulence. -->
+  <defs>
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="17" result="noise"/>
+      <feColorMatrix in="noise" type="matrix"
+        values="0 0 0 0 0.42
+                0 0 0 0 0.33
+                0 0 0 0 0.18
+                0 0 0 0.055 0"/>
+    </filter>
+    <filter id="blotch" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="3" seed="5" result="n2"/>
+      <feColorMatrix in="n2" type="matrix"
+        values="0 0 0 0 0.55
+                0 0 0 0 0.42
+                0 0 0 0 0.22
+                0 0 0 0.05 0"/>
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+  </defs>
+  <rect width="640" height="640" fill="#f1e4c3"/>
+  <rect width="640" height="640" filter="url(#blotch)"/>
+  <rect width="640" height="640" filter="url(#grain)"/>
+</svg>
