@@ -312,3 +312,105 @@
   padding: 0 5px;
   margin: 0.2em 0;
 }
+
+/* ================= блоки V3 (волна v0.2.0, fp №2 ч.2) ================= */
+
+/* {{wide}} — во всю ширину разворота */
+.page-body .block-wide {
+  column-span: all;
+  -webkit-column-span: all;
+  margin: 0.4em 0 0.75em;
+}
+.block-wide > *:last-child { margin-bottom: 0; }
+
+/* {{note}} — врезка-рамка на пергаменте */
+.page-body .block-note {
+  border: 1px solid rgba(88, 24, 13, 0.45);
+  background: rgba(255, 252, 240, 0.55);
+  box-shadow: 0 1px 0 rgba(88, 24, 13, 0.15);
+  padding: 0.55em 0.9em 0.45em;
+  margin: 0.5em 0.1em 0.8em;
+  font-size: 0.95em;
+  break-inside: avoid;
+}
+.block-note > *:last-child { margin-bottom: 0; }
+
+/* {{descriptive}} — флавор-блок с линейками */
+.page-body .block-desc {
+  border-top: 2px solid var(--book-accent);
+  border-bottom: 2px solid var(--book-accent);
+  background: rgba(255, 252, 240, 0.35);
+  padding: 0.5em 0.5em 0.35em;
+  margin: 0.6em 0 0.9em;
+  font-style: italic;
+  color: var(--book-quote-ink);
+  break-inside: avoid;
+}
+.block-desc > *:last-child { margin-bottom: 0; }
+
+/* {{monster}} — статблок: плашка с двойными линейками */
+.page-body .block-monster {
+  background: rgba(255, 250, 232, 0.72);
+  border-top: 2px solid var(--book-accent);
+  border-bottom: 2px solid var(--book-accent);
+  padding: 0.45em 0.85em 0.55em;
+  margin: 0.5em 0 0.9em;
+  font-size: 0.95em;
+  text-align: left;
+}
+.block-monster h4 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 13.5pt;
+  color: var(--book-heading);
+  margin: 0.15em 0 0.1em;
+  border: none;
+  letter-spacing: 0.01em;
+}
+.block-monster h5 {
+  font-family: var(--font-stat);
+  font-style: normal;
+  font-weight: 700;
+  font-size: 10pt;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--book-accent);
+  margin: 0.3em 0 0.15em;
+}
+.block-monster hr.rule--double { margin: 0.3em 0 0.4em; }
+.block-monster p { margin: 0 0 0.45em; text-align: left; hyphens: none; }
+.block-monster ul { padding-left: 1.1em; margin: 0.2em 0 0.5em; }
+.block-monster .table-wrap { break-inside: avoid; }
+
+/* {{toc}} — оглавление с точечными лидерами */
+.page-body .block-toc { font-size: 0.95em; text-align: left; }
+.block-toc ul { list-style: none; padding-left: 0; margin: 0.2em 0; }
+.block-toc ul ul { padding-left: 1.25em; }
+.block-toc li { margin: 0.14em 0; }
+.block-toc .toc-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4em;
+  color: var(--book-link);
+  text-decoration: none;
+}
+.block-toc .toc-row:hover .toc-title { text-decoration: underline; }
+.block-toc .toc-dots {
+  flex: 1 1 auto;
+  border-bottom: 1px dotted rgba(88, 24, 13, 0.55);
+  transform: translateY(-3px);
+  min-width: 1em;
+}
+.block-toc .toc-page {
+  font-family: var(--font-stat);
+  font-weight: 700;
+  color: var(--book-accent);
+}
+
+/* директивы и маркеры (невидимые) */
+.page-body .block-colcount, .page-body .block-pagenumber { display: none; }
+
+/* страницы с числом колонок по {{column-count:N}} */
+.page--cols-1 .page-body { column-count: 1; }
+.page--cols-3 .page-body { column-count: 3; }
+.page--cols-4 .page-body { column-count: 4; }
