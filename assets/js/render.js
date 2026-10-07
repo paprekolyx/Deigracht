@@ -159,20 +159,33 @@ DG.render = (function () {
     return wrap;
   }
 
-  /* Массив элементов для пагинации: Element | {marker:true} (\page) */
-  function blocksToItems(blocks) {
-    var items = [];
+  /* Массив элементов для пагинации: Element | {marker:true} (\page).
+     data-hid (волна v0.4.0, fp №11): порядковый номер заголовка верхнего
+     уровня — по нему toc.js строит карту страниц после пагинации.
+     Вложенные в V3-блоки заголовки hid не получают (itemsCore(false)) —
+     автооглавление не засоряется статблоками и врезками. */
+  function itemsCore(blocks, assignHid) {
+    var items = [], hid = 0;
     (blocks || []).forEach(function (b) {
       if (b.t === 'pagebreak') items.push({ marker: true });
       else if (b.t === 'meta') { /* не рендерится */ }
-      else items.push(blockToElement(b));
+      else {
+        var el2 = blockToElement(b);
+        if (assignHid && b.t === 'heading') {
+          el2.setAttribute('data-hid', String(hid));
+          hid++;
+        }
+        items.push(el2);
+      }
     });
     return items;
   }
 
+  function blocksToItems(blocks) { return itemsCore(blocks, true); }
+
   /* Прямой рендер в контейнер (вложенные блоки v3-заглушек) */
   function renderBlocks(blocks, container) {
-    blocksToItems(blocks).forEach(function (it) {
+    itemsCore(blocks, false).forEach(function (it) {
       if (it.marker) container.appendChild(E()('div', 'pagebreak-inline', { text: '\\page' }));
       else container.appendChild(it);
     });

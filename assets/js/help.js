@@ -99,6 +99,16 @@ DG.help = (function () {
       '- [{{ Блоки Homebrewery V3}}{{ 2}}](#p2)',
       '}}',
       '',
+      'Выше — **ручной** TOC: номера страниц проставлены рукой (демонстрация',
+      'синтаксиса ссылок `#pN`). Ниже — **автооглавление**: заголовки 3-го',
+      '',
+      '**{{toc,auto}}** — автооглавление: заголовки 3-го уровня (главы) с',
+      'номерами страниц собираются сами, двухпроходным рендером (fp №11).',
+      'Диапазон уровней: {{toc,auto:1-3}} — части, разделы и главы.',
+      '',
+      '{{toc,auto',
+      '}}',
+      '',
       '{{pageNumber,auto}}',
       '',
       'Неизвестный модификатор `{{пример}}` покажется плашкой «не',
@@ -122,8 +132,15 @@ DG.help = (function () {
     var pagesEl = document.getElementById('pages');
     var doc = DG.parser.parse(demoSrc());
     DG.pages.docTitle = (doc.meta && doc.meta.title) || 'Справка Deigracht';
-    var items = DG.render.blocksToItems(doc.blocks);
-    var res = DG.pages.paginate(items, pagesEl);
+    /* автооглавление (fp №11): тот же двухпроходный цикл, что в editor.js */
+    DG.toc.reset(DG.toc.collectHeadings(doc.blocks));
+    var res = null, pass = 0, stable = false;
+    while (pass < 3 && !stable) {
+      var items = DG.render.blocksToItems(doc.blocks);
+      res = DG.pages.paginate(items, pagesEl);
+      stable = DG.toc.collect(doc.blocks, pagesEl);
+      pass++;
+    }
     var cnt = document.getElementById('help-pages');
     if (cnt) cnt.textContent = 'страниц в справке: ' + res.pages;
     var ver = document.getElementById('help-version');

@@ -20,9 +20,18 @@ DG.editor = (function () {
     var doc = DG.parser.parse(text);
     lastTitle = (doc.meta && doc.meta.title) || 'Без названия';
 
-    var items = DG.render.blocksToItems(doc.blocks);
+    /* автооглавление (fp №11, волна v0.4.0): двухпроходный рендер —
+       проход 1 с заглушками «…», проход 2 с номерами из карты страниц;
+       при расхождении карты — до 3 проходов до устойчивости (toc.js) */
+    DG.toc.reset(DG.toc.collectHeadings(doc.blocks));
     DG.pages.docTitle = lastTitle;
-    var res = DG.pages.paginate(items, pagesEl);
+    var res = null, pass = 0, stable = false;
+    while (pass < 3 && !stable) {
+      var items = DG.render.blocksToItems(doc.blocks);
+      res = DG.pages.paginate(items, pagesEl);
+      stable = DG.toc.collect(doc.blocks, pagesEl);
+      pass++;
+    }
 
     /* счётчики */
     cntPages.textContent = 'страниц: ' + res.pages;
@@ -34,6 +43,11 @@ DG.editor = (function () {
     if (res.overflowBlocks.length) {
       warns.push('блоков крупнее страницы: ' + res.overflowBlocks.length +
         ' (помечены на развороте; добавьте \\page или разбейте вручную)');
+    }
+    if (!stable) {
+      warns.push('автооглавление не сошлось за 3 прохода (рядом с оглавлением '
+        + 'граница страницы или \\page): номера могут отставать на один '
+        + 'проход — добавьте \\page после оглавления');
     }
     var unclosed = countUnclosed(doc.blocks);
     if (unclosed) warns.push('незакрытых блоков {{…}}: ' + unclosed);

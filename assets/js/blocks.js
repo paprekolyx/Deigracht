@@ -74,10 +74,16 @@ DG.blocks = (function () {
         renderBlocks(node.body || [], inner);
         return inner;
 
-      case 'toc':
+      case 'toc': {
+        /* волна v0.4.0 (fp №11): {{toc,auto}} / {{toc,auto:N-M}} —
+           оглавление собирается из заголовков с номерами страниц
+           (двухпроходный рендер, toc.js); ручной {{toc}} — без изменений */
+        var spec = DG.toc.parseSpec(node.modsRaw);
+        if (spec.auto) return DG.toc.autoNav(spec);
         inner = DG.util.el('nav', 'block-toc');
         renderBlocks(node.body || [], inner);
         return decorateToc(inner);
+      }
 
       case 'column-count': {
         /* директива: pages.js закрывает текущую страницу и открывает
