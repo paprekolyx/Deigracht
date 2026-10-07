@@ -1,4 +1,5 @@
 
+
 /* Deigracht — интерфейс редактора (editor.css), волна v0.1.0 (fp №1).
    Тёмный нейтральный UI: тулбар, две панели, граница-drag, статус-бар,
    модальное окно печати. Мобильная адаптация — fp №15 (v1.0.0); здесь —
@@ -43,7 +44,26 @@ body {
   border-radius: 10px;
   white-space: nowrap;
 }
-.tools { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+/* pr040-М1 (вики-заметка 1): шапка — три группы: слева «подготовка и работа
+   с документом», в центре бренд/версия/предупреждение, справа «экспорт»;
+   между «Открыть .md»/«Добавить блок» и «Справка»/«Пример» — разделитель */
+.tools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.toolbar-center {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0 auto;
+}
+.tools-sep {
+  width: 1px;
+  height: 22px;
+  background: #5a4f42;
+  margin: 0 3px;
+  flex: 0 0 auto;
+}
+/* шапка справки: единственная группа кнопок — справа (как до v0.4.1) */
+.help-body .tools { margin-left: auto; }
 
 .btn {
   font-family: var(--ui-font);
@@ -55,6 +75,10 @@ body {
   padding: 6px 12px;
   cursor: pointer;
   white-space: nowrap;
+  /* pr040-М2 (грабля №19): якоря a.btn («Справка», «В редактор») наследуют
+     браузерное подчёркивание — базовый стиль кнопки сбрасывает его;
+     каждый новый кликабельный элемент проверять в приёмке */
+  text-decoration: none;
 }
 .btn:hover { background: #574c3f; }
 .btn:focus-visible { outline: 2px solid var(--ui-warn); outline-offset: 1px; }
@@ -123,6 +147,32 @@ body.dragging { cursor: col-resize; user-select: none; }
   overflow: auto;
   min-height: 0;
 }
+
+/* pr040-М3 (вики-заметка 3): кастомные скроллбары панелей в стиле сайта
+   вместо стандартных серо-белых. Chrome/Edge/Safari — ::-webkit-scrollbar,
+   Firefox — scrollbar-width/scrollbar-color; цвета — UI-токены. */
+#src, .pages-scroll, .menu {
+  scrollbar-width: thin;
+  scrollbar-color: #5a4f42 var(--ui-bg-deep);
+}
+#src::-webkit-scrollbar,
+.pages-scroll::-webkit-scrollbar,
+.menu::-webkit-scrollbar { width: 12px; height: 12px; }
+#src::-webkit-scrollbar-track,
+.pages-scroll::-webkit-scrollbar-track,
+.menu::-webkit-scrollbar-track { background: var(--ui-bg-deep); }
+#src::-webkit-scrollbar-thumb,
+.pages-scroll::-webkit-scrollbar-thumb,
+.menu::-webkit-scrollbar-thumb {
+  background: #5a4f42;
+  border: 3px solid var(--ui-bg-deep);
+  border-radius: 6px;
+}
+#src::-webkit-scrollbar-thumb:hover,
+.pages-scroll::-webkit-scrollbar-thumb:hover,
+.menu::-webkit-scrollbar-thumb:hover { background: var(--ui-accent-hi); }
+#src::-webkit-scrollbar-corner,
+.pages-scroll::-webkit-scrollbar-corner { background: var(--ui-bg-deep); }
 
 /* ---------- статус-бар ---------- */
 .statusbar {
@@ -199,7 +249,10 @@ body.dragging { cursor: col-resize; user-select: none; }
   .pane-preview { flex: 0 0 auto; height: 70vh; }
   .divider { display: none; }
   .toolbar { flex-wrap: wrap; }
-  .tools { margin-left: 0; }
+  /* pr040-М1: на узком окне бренд — отдельной строкой, группы кнопок
+     прижаты к краям своих строк */
+  .toolbar-center { margin: 4px 0; width: 100%; }
+  .tools--left, .tools--right { margin: 0; }
 }
 
 /* ---------- меню сниппетов (fp №10, v0.3.0) ---------- */
@@ -218,6 +271,9 @@ body.dragging { cursor: col-resize; user-select: none; }
   max-height: 70vh;
   overflow: auto;
 }
+/* pr040-М1: в левой группе шапки меню раскрывается вправо от левого края
+   кнопки (иначе выпадало бы за левую границу окна) */
+.tools--left .menu { right: auto; left: 0; }
 .menu-item {
   display: block;
   width: 100%;

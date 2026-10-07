@@ -1,4 +1,5 @@
 
+
 /* Deigracht — тема книги «пергамент» (theme-book.css), волна v0.1.0 (fp №3).
    Стиль — умеренная стилизация под книгу правил (ВЛ-11): пергамент
    (собственная SVG-текстура, CC0), две колонки, красно-коричневые
@@ -185,6 +186,11 @@
   break-inside: avoid;
   text-align: left;
   hyphens: none;
+  /* pr040-З1 (грабля №15): без переноса длинные неделимые строки кода
+     в многоколоночном развороте рисуются поверх соседней колонки —
+     строки переносятся по словам/символам (экран и печать) */
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 .page-body pre code { background: none; padding: 0; }
 
@@ -225,6 +231,14 @@
   margin: 0.45em 0 0.75em;
   break-inside: avoid;
 }
+/* ВЛ-15 (ответ владельца В-1, 07.10.2026 — гибрид): короткая таблица идёт
+   целиком (break-inside: avoid выше — при необходимости переезжает в
+   следующую колонку/на страницу); таблица выше колонки получает класс
+   --split по замеру в pages.js и дробится по строкам — строки не режутся,
+   шапка повторяется на каждом фрагменте (экран и печать — единый DOM). */
+.page-body .table-wrap--split { break-inside: auto; }
+.page-body .book-table tr { break-inside: avoid; }
+.page-body .book-table thead { display: table-header-group; }
 .page-body table.book-table {
   width: 100%;
   border-collapse: collapse;
@@ -387,6 +401,16 @@
 .block-toc ul { list-style: none; padding-left: 0; margin: 0.2em 0; }
 .block-toc ul ul { padding-left: 1.25em; }
 .block-toc li { margin: 0.14em 0; }
+/* rev040-Н03: строка ручного TOC с ATX-префиксом (`- #### [{{…}}{{N}}](#pN)`
+   — паттерн эталона и документа владельца) получает заголовочное
+   оформление, как в Homebrewery; класс toc-hN проставляет decorateToc */
+.block-toc li.toc-h1 .toc-title, .block-toc li.toc-h2 .toc-title,
+.block-toc li.toc-h3 .toc-title, .block-toc li.toc-h4 .toc-title,
+.block-toc li.toc-h5 .toc-title, .block-toc li.toc-h6 .toc-title {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--book-heading);
+}
 .block-toc .toc-row {
   display: flex;
   align-items: baseline;
