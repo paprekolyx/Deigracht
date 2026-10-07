@@ -231,6 +231,17 @@ DG.editor = (function () {
     });
     src.addEventListener('scroll', syncScroll, { passive: true });
 
+    /* навигация по якорям оглавления: #pN → страница N разворота */
+    pagesEl.addEventListener('click', function (e) {
+      var a = e.target && e.target.closest ? e.target.closest('a') : null;
+      if (!a) return;
+      var m = /^#p(\d+)$/.exec(a.getAttribute('href') || '');
+      if (!m) return;
+      e.preventDefault();
+      var pg = pagesEl.querySelector('.page[data-page="' + m[1] + '"]');
+      if (pg) pg.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
     renderNow();
     if (doc !== null && !storageOk) saveNow();
   }

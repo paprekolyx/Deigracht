@@ -110,7 +110,7 @@ DG.render = (function () {
       case 'table':
         return renderTable(node);
       case 'v3':
-        return DG.blocks.renderStub(node, renderBlocks);
+        return DG.blocks.render(node, renderBlocks);
       default:
         return E()('p', 'unknown-block', { text: '[нераспознанный блок]' });
     }
