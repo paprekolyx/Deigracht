@@ -3,8 +3,10 @@
    Запуск:  node tests/parser-smoke.js   (Node >= 16, без зависимостей).
    Проверяет: safeUrl-вектора (SECURITY §2), AST синтетического документа
    (все типы блоков v0.1.0, XSS-инертность), метрики эталона
-   data/etalon/vsemirnaya-istoriya.md (регресс-приёмка, регламент §8.4 —
-   ожидаемые значения заморожены в data/etalon/metrika.md).
+   data/etalon/etalon-sint.md — синтетической структурной копии эталонного
+   документа владельца (текст — генерация «ааа ббб», блок-каркас и метрики —
+   точная копия; решение владельца 07.10.2026: авторский текст не публикуется.
+   Регресс-приёмка, регламент §8.4 — значения заморожены в metrika.md).
    DOM не нужен: тестируются config.js/util.js/parser.js (чистые данные).
    Код выхода 0 = зелёный. */
 'use strict';
@@ -128,7 +130,7 @@ const wide = d.blocks[13];
 eq('v3 незакрытый wide', [wide.modsRaw, wide.closed], ['wide', false]);
 
 /* ---------- 3. эталон: замороженные метрики (metrika.md) ---------- */
-const etalonPath = path.join(root, 'data/etalon/vsemirnaya-istoriya.md');
+const etalonPath = path.join(root, 'data/etalon/etalon-sint.md');
 if (!fs.existsSync(etalonPath)) {
   console.log('  FAIL эталон не найден:', etalonPath);
   fails++;

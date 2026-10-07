@@ -27,6 +27,9 @@
   v1.0 (0.1.0-draft): первый состав — 12 групп проверок (волна v0.1.0);
     REQUIRED включает tests/parser-smoke.js (регресс эталона — метрики в
     data/etalon/metrika.md).
+  v1.1 (0.1.1-draft): REQUIRED — data/etalon/etalon-sint.md вместо копии
+    документа владельца (решение владельца 07.10.2026: авторский текст
+    не публикуется — синтетическая структурная копия; грабля №12 регламента).
 """
 
 import os
@@ -66,6 +69,7 @@ REQUIRED = [
     'docs/plan/voprosy-vladeltsu.md',
     'docs/update/update-v001.md', 'docs/update/update-v002.md',
     'docs/update/update-v003.md', 'docs/update/update-v010.md',
+    'docs/update/update-v011.md',
     'docs/setup/setup-repo-pages.md',
     'assets/css/fonts.css', 'assets/css/tokens.css', 'assets/css/editor.css',
     'assets/css/theme-book.css', 'assets/css/print.css',
@@ -74,7 +78,7 @@ REQUIRED = [
     'assets/js/editor.js', 'assets/js/storage.js', 'assets/js/pdf.js',
     'assets/img/parchment.svg', 'assets/img/favicon.svg',
     'assets/fonts/manifest.json',
-    'data/etalon/vsemirnaya-istoriya.md', 'data/etalon/metrika.md',
+    'data/etalon/etalon-sint.md', 'data/etalon/metrika.md',
     'tests/check-repo.py', 'tests/parser-smoke.js',
 ]
 
@@ -253,7 +257,7 @@ if os.path.exists(fonts_css):
 fail('11.шрифты', '; '.join(font_fail)) if font_fail else ok(f'11.шрифты: {len(woff)} woff2, {len(ofl)} OFL, ссылки fonts.css живы')
 
 # ------------------------------------------------------------- 12. эталон
-et1 = os.path.join(ROOT, 'data/etalon/vsemirnaya-istoriya.md')
+et1 = os.path.join(ROOT, 'data/etalon/etalon-sint.md')
 et2 = os.path.join(ROOT, 'data/etalon/metrika.md')
 et_fail = []
 if os.path.exists(et1):
