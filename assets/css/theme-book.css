@@ -1,0 +1,314 @@
+
+/* Deigracht — тема книги «пергамент» (theme-book.css), волна v0.1.0 (fp №3).
+   Стиль — умеренная стилизация под книгу правил (ВЛ-11): пергамент
+   (собственная SVG-текстура, CC0), две колонки, красно-коричневые
+   заголовки-капители (Cormorant Unicase), текст — Alegreya, буквицы —
+   Ruslan Display. Ничего из оформления официальных книг WotC не копируется
+   (LICENSE ч.3 п.2). Геометрия — ADR-003 ред. 1.1 (Letter/A4). */
+
+/* ---------- страница ---------- */
+
+#pages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding: 22px 12px 34px;
+}
+
+#pages[data-format="letter"] .page { width: var(--page-letter-w); height: var(--page-letter-h); }
+#pages[data-format="a4"] .page { width: var(--page-a4-w); height: var(--page-a4-h); }
+
+.page {
+  position: relative;
+  flex: 0 0 auto;
+  padding: var(--page-pad-top) var(--page-pad-x) var(--page-pad-bottom);
+  background-color: var(--book-parchment);
+  background-image: url('../img/parchment.svg');
+  background-size: 640px 640px;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.38),
+    inset 0 0 60px rgba(120, 90, 40, 0.16),
+    inset 0 0 3px rgba(90, 66, 30, 0.35);
+  overflow: hidden;
+  color: var(--book-ink);
+}
+
+.page-body {
+  height: 100%;
+  column-count: 2;
+  column-gap: var(--col-gap);
+  column-fill: auto;
+  overflow: hidden; /* переполнение измеряется scrollWidth (pages.js) */
+  font-family: var(--font-book);
+  font-size: var(--book-font-size);
+  line-height: var(--book-line-height);
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto; /* переносы работают при <html lang=ru> */
+}
+
+/* ---------- колонтитул ---------- */
+
+.page-foot {
+  position: absolute;
+  left: var(--page-pad-x);
+  right: var(--page-pad-x);
+  bottom: 0.32in;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 9.5pt;
+  letter-spacing: 0.05em;
+  color: var(--book-accent);
+}
+.foot-title {
+  max-width: 70%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.85;
+}
+.foot-num { font-size: 11pt; }
+
+.page--over { outline: 2px dashed #a33; outline-offset: -2px; }
+.page-over-flag {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  background: rgba(163, 51, 51, 0.92);
+  color: #ffe9e2;
+  font-family: var(--ui-font);
+  font-size: 11px;
+  text-align: center;
+  padding: 3px 8px;
+  z-index: 2;
+}
+
+/* ---------- заголовки ---------- */
+
+.page-body h1, .page-body h2, .page-body h3,
+.page-body h4, .page-body h5, .page-body h6 {
+  font-family: var(--font-heading);
+  color: var(--book-heading);
+  text-align: left;
+  hyphens: none;
+  break-after: avoid;
+  break-inside: avoid;
+}
+.page-body h1 {
+  font-size: 27pt;
+  font-weight: 700;
+  line-height: 1.12;
+  margin: 0 0 0.35em;
+  padding-bottom: 0.12em;
+  border-bottom: 3px double var(--book-accent);
+}
+.page-body h2 {
+  font-size: 19pt;
+  font-weight: 700;
+  line-height: 1.15;
+  margin: 1.05em 0 0.32em;
+  padding-bottom: 0.08em;
+  border-bottom: 1.5px solid var(--book-accent);
+}
+.page-body h1:first-child, .page-body h2:first-child { margin-top: 0; }
+.page-body h3 {
+  font-size: 14.5pt;
+  font-weight: 600;
+  margin: 0.95em 0 0.28em;
+  border-bottom: 1px solid rgba(126, 45, 27, 0.45);
+  padding-bottom: 0.05em;
+}
+.page-body h4 {
+  font-family: var(--font-stat);
+  font-size: 12pt;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  color: var(--book-heading);
+  margin: 0.9em 0 0.22em;
+}
+.page-body h5 {
+  font-size: 11.5pt;
+  font-style: italic;
+  font-family: var(--font-book);
+  font-weight: 700;
+  margin: 0.85em 0 0.2em;
+}
+.page-body h6 {
+  font-family: var(--font-stat);
+  font-size: 10.5pt;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--book-accent);
+  margin: 0.8em 0 0.2em;
+}
+
+/* ---------- буквица (первый абзац после H1) ---------- */
+
+.page-body h1 + p::first-letter {
+  font-family: var(--font-dropcap);
+  font-size: 3.3em;
+  line-height: 0.82;
+  float: left;
+  padding: 0.06em 0.09em 0 0;
+  color: var(--book-heading);
+}
+
+/* ---------- текст ---------- */
+
+.page-body p { margin: 0 0 0.62em; break-inside: auto; }
+.page-body strong { font-weight: 700; }
+.page-body em { font-style: italic; }
+.page-body a { color: var(--book-link); text-decoration: underline; text-decoration-style: dotted; }
+.page-body .badlink {
+  color: #8a3324;
+  text-decoration: line-through dotted;
+  cursor: help;
+}
+.page-body code {
+  font-family: var(--ui-mono);
+  font-size: 0.84em;
+  background: var(--book-code-bg);
+  padding: 0.08em 0.3em;
+  border-radius: 3px;
+}
+.page-body pre {
+  background: var(--book-code-bg);
+  border-left: 3px solid var(--book-accent);
+  padding: 0.5em 0.75em;
+  margin: 0.5em 0 0.7em;
+  font-size: 0.82em;
+  line-height: 1.45;
+  break-inside: avoid;
+  text-align: left;
+  hyphens: none;
+}
+.page-body pre code { background: none; padding: 0; }
+
+.page-body ul, .page-body ol {
+  margin: 0.2em 0 0.7em;
+  padding-left: 1.35em;
+}
+.page-body li { margin: 0.14em 0; }
+.page-body li::marker { color: var(--book-accent); }
+
+.page-body blockquote {
+  margin: 0.55em 0 0.75em;
+  padding: 0.15em 0 0.15em 0.85em;
+  border-left: 3px solid var(--book-quote-line);
+  color: var(--book-quote-ink);
+  font-style: italic;
+  break-inside: avoid;
+}
+.page-body blockquote p { margin-bottom: 0.2em; }
+
+/* ---------- линейки (___ / ---) ---------- */
+
+.page-body hr.rule {
+  border: none;
+  margin: 0.85em 8%;
+}
+.page-body hr.rule--double {
+  border-top: 3px double var(--book-accent);
+}
+.page-body hr.rule--single {
+  border-top: 1.5px solid var(--book-accent);
+  position: relative;
+}
+
+/* ---------- таблицы ---------- */
+
+.page-body .table-wrap {
+  margin: 0.45em 0 0.75em;
+  break-inside: avoid;
+}
+.page-body table.book-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.93em;
+  line-height: 1.32;
+  hyphens: none;
+}
+.book-table thead th {
+  background: var(--book-table-head);
+  color: var(--book-table-head-ink);
+  font-family: var(--font-stat);
+  font-weight: 700;
+  font-size: 0.98em;
+  text-align: left;
+  padding: 4px 7px;
+  border: 1px solid var(--book-table-head);
+}
+.book-table tbody td {
+  padding: 3.5px 7px;
+  border-bottom: 1px solid var(--book-table-line);
+  vertical-align: top;
+}
+.book-table tbody tr:nth-child(even) { background: var(--book-table-stripe); }
+
+/* ---------- заглушки V3-блоков (до v0.2.0) ---------- */
+
+.page-body .v3stub {
+  border: 1px dashed rgba(126, 45, 27, 0.55);
+  border-radius: 3px;
+  background: rgba(255, 252, 240, 0.42);
+  padding: 0.45em 0.7em 0.5em;
+  margin: 0.5em 0 0.7em;
+  text-align: left;
+}
+.v3stub-label {
+  font-family: var(--font-stat);
+  font-size: 8.6pt;
+  line-height: 1.5;
+  margin-bottom: 0.3em;
+  color: var(--book-quote-ink);
+  hyphens: none;
+}
+.v3stub-chip {
+  display: inline-block;
+  font-weight: 700;
+  background: var(--book-heading);
+  color: #f7efdb;
+  padding: 0.5px 7px;
+  border-radius: 8px;
+  font-size: 8.4pt;
+}
+.v3stub-note { opacity: 0.9; }
+.v3stub-inner > *:last-child { margin-bottom: 0; }
+
+/* ---------- плейсхолдеры изображений (до v1.0.0 — fp №18) ---------- */
+
+.page-body .img-ph {
+  border: 1.5px dashed rgba(126, 45, 27, 0.5);
+  border-radius: 3px;
+  background: rgba(255, 252, 240, 0.4);
+  color: var(--book-quote-ink);
+  font-family: var(--font-stat);
+  font-size: 8.8pt;
+  text-align: center;
+  padding: 0.7em 0.8em;
+  margin: 0.55em 0 0.75em;
+  break-inside: avoid;
+  hyphens: none;
+}
+.page-body .img-ph--inline {
+  display: inline-block;
+  padding: 0.1em 0.5em;
+  margin: 0 0.15em;
+  font-size: 0.82em;
+}
+.img-ph-mark { color: var(--book-accent); margin-right: 0.45em; font-weight: 700; }
+
+.pagebreak-inline {
+  display: inline-block;
+  font-family: var(--ui-mono);
+  font-size: 8.5pt;
+  color: var(--book-accent);
+  border: 1px dashed var(--book-accent);
+  border-radius: 3px;
+  padding: 0 5px;
+  margin: 0.2em 0;
+}

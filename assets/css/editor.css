@@ -1,0 +1,203 @@
+
+/* Deigracht — интерфейс редактора (editor.css), волна v0.1.0 (fp №1).
+   Тёмный нейтральный UI: тулбар, две панели, граница-drag, статус-бар,
+   модальное окно печати. Мобильная адаптация — fp №15 (v1.0.0); здесь —
+   минимальная раскладка для узких окон. */
+
+body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* скроллятся только панели */
+}
+
+/* ---------- тулбар ---------- */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: var(--ui-bg-deep);
+  border-bottom: 1px solid var(--ui-border);
+  flex: 0 0 auto;
+}
+.brand {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 21px;
+  letter-spacing: 0.06em;
+  color: #d8c9a3;
+  margin-right: 6px;
+  user-select: none;
+}
+.brand-mark {
+  display: inline-block;
+  width: 18px; height: 18px;
+  margin-right: 7px;
+  vertical-align: -3px;
+}
+.chip {
+  font-size: 11px;
+  background: var(--ui-border);
+  color: #cbbd99;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.tools { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+
+.btn {
+  font-family: var(--ui-font);
+  font-size: 13px;
+  color: var(--ui-text);
+  background: #453d33;
+  border: 1px solid #5a4f42;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn:hover { background: #574c3f; }
+.btn:focus-visible { outline: 2px solid var(--ui-warn); outline-offset: 1px; }
+.btn--primary {
+  background: var(--ui-accent);
+  border-color: var(--ui-accent-hi);
+}
+.btn--primary:hover { background: var(--ui-accent-hi); }
+
+/* ---------- рабочая область ---------- */
+.workspace {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0;
+}
+.pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.pane-editor { flex: 0 0 46%; }
+.pane-preview { flex: 1 1 auto; background: #171410; }
+
+.pane-title {
+  flex: 0 0 auto;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--ui-muted);
+  padding: 6px 12px;
+  background: #211d17;
+  border-bottom: 1px solid var(--ui-border);
+  user-select: none;
+}
+
+#src {
+  flex: 1 1 auto;
+  width: 100%;
+  resize: none;
+  border: 0;
+  padding: 14px 16px;
+  background: var(--ui-editor-bg);
+  color: #e8e0cc;
+  font-family: var(--ui-mono);
+  font-size: 13.5px;
+  line-height: 1.55;
+  tab-size: 2;
+  outline: none;
+}
+#src::placeholder { color: #6d6353; }
+#src:focus { box-shadow: inset 2px 0 0 var(--ui-accent); }
+
+.divider {
+  flex: 0 0 6px;
+  cursor: col-resize;
+  background: #1a1712;
+  border-left: 1px solid var(--ui-border);
+  border-right: 1px solid var(--ui-border);
+}
+.divider:hover, body.dragging .divider { background: var(--ui-accent); }
+body.dragging { cursor: col-resize; user-select: none; }
+
+.pages-scroll {
+  flex: 1 1 auto;
+  overflow: auto;
+  min-height: 0;
+}
+
+/* ---------- статус-бар ---------- */
+.statusbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 6px 14px;
+  background: var(--ui-bg-deep);
+  border-top: 1px solid var(--ui-border);
+  font-size: 12px;
+  color: var(--ui-muted);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.statusbar .grow { flex: 1; }
+.statusbar .stat { color: #b6a886; }
+#save-state.saved { color: var(--ui-ok); }
+#save-state.error { color: var(--ui-error); }
+#warnings { color: var(--ui-warn); overflow: hidden; text-overflow: ellipsis; }
+.hint-note { overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- модальное окно печати ---------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 8, 5, 0.62);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+.modal-box {
+  width: min(440px, 92vw);
+  background: var(--ui-panel);
+  border: 1px solid #5a4f42;
+  border-radius: 8px;
+  padding: 22px 26px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+.modal-box h2 {
+  margin: 0 0 14px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 22px;
+  color: #d8c9a3;
+}
+.fmt-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.fmt-row input { accent-color: var(--ui-accent); }
+.modal-hint {
+  margin: 12px 0 18px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ui-muted);
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* ---------- узкие окна (минимально до fp №15) ---------- */
+@media (max-width: 860px) {
+  body { overflow: auto; }
+  .workspace { flex-direction: column; }
+  .pane-editor { flex: 0 0 auto; height: 46vh; }
+  .pane-preview { flex: 0 0 auto; height: 70vh; }
+  .divider { display: none; }
+  .toolbar { flex-wrap: wrap; }
+  .tools { margin-left: 0; }
+}

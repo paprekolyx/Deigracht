@@ -1,0 +1,70 @@
+
+/* Deigracht — дизайн-токены (tokens.css), волна v0.1.0.
+   Тема книги = набор токенов (задел fp №8 «конструктор тем»).
+   Шрифты — assets/css/fonts.css (OFL, кириллица, локально — ADR-002). */
+
+:root {
+  /* ---------- книга (тема «пергамент», 5ePHB-стиль) ---------- */
+  --book-parchment: #f1e4c3;
+  --book-parchment-edge: #e4d3a6;
+  --book-ink: #1d1a15;
+  --book-heading: #58180d;        /* красно-коричневый заголовков */
+  --book-accent: #7e2d1b;         /* линейки, рамки, акценты */
+  --book-table-head: #58180d;
+  --book-table-head-ink: #f5ead0;
+  --book-table-stripe: rgba(88, 24, 13, 0.06);
+  --book-table-line: rgba(88, 24, 13, 0.28);
+  --book-quote-line: #7e2d1b;
+  --book-quote-ink: #3a2f22;
+  --book-link: #6a2416;
+  --book-code-bg: rgba(88, 24, 13, 0.07);
+
+  /* семейства (ADR-002 ред. 1.1: готический/старопечатный склад, OFL) */
+  --font-book: 'Alegreya', Georgia, serif;            /* текст книги */
+  --font-heading: 'Cormorant Unicase', 'Alegreya', serif; /* заголовки-капители */
+  --font-stat: 'Fira Sans Condensed', 'PT Sans Narrow', sans-serif; /* статблоки/UI книги */
+  --font-dropcap: 'Ruslan Display', 'Cormorant Unicase', serif;     /* буквицы */
+
+  /* геометрия страницы (ADR-003 ред. 1.1: Letter/A4, дефолт Letter — ВЛ-07) */
+  --page-letter-w: 8.5in;
+  --page-letter-h: 11in;
+  --page-a4-w: 210mm;
+  --page-a4-h: 297mm;
+  --page-pad-top: 0.55in;
+  --page-pad-x: 0.62in;
+  --page-pad-bottom: 0.78in;
+  --col-gap: 0.36in;
+  --book-font-size: 10.6pt;
+  --book-line-height: 1.42;
+
+  /* ---------- интерфейс редактора (тёмный, нейтральный) ---------- */
+  --ui-bg: #262219;
+  --ui-bg-deep: #1d1a14;
+  --ui-panel: #2b2620;
+  --ui-editor-bg: #241f19;
+  --ui-border: #3d362c;
+  --ui-text: #e8e0cc;
+  --ui-muted: #9a8d74;
+  --ui-accent: #7e2d1b;
+  --ui-accent-hi: #96402c;
+  --ui-ok: #8aa37a;
+  --ui-warn: #d9a05b;
+  --ui-error: #c96a5a;
+  --ui-font: 'Fira Sans Condensed', 'PT Sans Narrow', sans-serif;
+  --ui-mono: ui-monospace, 'JetBrains Mono', 'Cascadia Mono', Consolas, monospace;
+}
+
+/* Базовые сбросы */
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  font-family: var(--ui-font);
+  background: var(--ui-bg);
+  color: var(--ui-text);
+}
+
+/* Блокировка фонового скролла при открытом модальном окне
+   (требование владельца 07.10.2026 к модалке печати — fp №4) */
+html.modal-lock, html.modal-lock body { overflow: hidden !important; }
+
+[hidden] { display: none !important; }

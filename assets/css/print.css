@@ -1,0 +1,54 @@
+
+/* Deigracht — печать и PDF (print.css), волна v0.1.0 (fp №4).
+   Принципы: 1 экранная .page = 1 печатная страница; геометрию @page
+   задаёт pdf.js инъекцией стиля #page-style (формат A4/Letter — ADR-003
+   ред. 1.1, дефолт Letter); интерфейс редактора в печать не попадает.
+   Тест-матрица браузеров — техпаспорт §8 (Chrome/Edge/Firefox/Yandex). */
+
+@media print {
+  /* фон и рамки браузера не печатаем, пергамент — печатаем */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  html.modal-lock, html.modal-lock body { overflow: visible !important; }
+
+  body {
+    display: block;
+    background: #fff;
+    overflow: visible;
+  }
+
+  /* интерфейс — скрыть (класс .ui носят тулбар, панель исходника,
+     divider, статус-бар, модалка) */
+  .ui { display: none !important; }
+
+  .workspace, .pane-preview, .pages-scroll {
+    display: block;
+    overflow: visible;
+    height: auto;
+    background: #fff;
+    padding: 0;
+  }
+
+  #pages {
+    display: block;
+    padding: 0;
+  }
+
+  .page {
+    box-shadow: none;
+    margin: 0;
+    break-after: page;
+    page-break-after: always;
+  }
+  .page:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  /* служебная отметка переполнения — только для экрана */
+  .page--over { outline: none; }
+  .page-over-flag { display: none !important; }
+}
